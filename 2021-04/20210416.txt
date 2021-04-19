@@ -1,0 +1,93 @@
+﻿Ch04. 디스크 관리
+Ch05. 파일시스템
+
+파티셔닝
+
+MBR Partitioning
+
+GPT Partitioning
+
+파일 시스템
+  - 구조화된 일련의 정보를 구성하는 파일과 디렉터리의 집합
+    (디스크에 저장되는 데이터(파일, 디렉터리)를 논리적으로 저장하고 관리하는 방식)
+
+
+ - EXT2 / EXT3 /EXT4
+ - XFS 
+ - FAT32 
+ - NTFS
+ - ISO9660 
+ - UDFS  
+
+
+디스크 추가 후 사용 방법
+(1) 디스크 장착
+(2) 파티셔닝 - fdisk
+   # fdisk  DEVICE
+
+(3) 파일시스템 초기화
+   # mkfs  -t   FSTYPE   DEVICE
+
+(4) 마운트
+ - 일회성 마운트
+   # mount  -t  FSTYPE  DEVICE  MOUNT_POINT
+
+ - 영구 마운트
+   # vim /etc/fstab
+[DEVICE      MOUNT_POINT        FSTYPE      MOUNT_OPTION    DUMP   FSCK ]
+
+(5) 마운트 해제
+   # umount   DEVICE
+   # umount   MOUNT_POINT
+
+---
+SWAP
+(1) 디스크 추가
+(2) 파티셔닝 - fdisk
+   # fdisk  DEVICE
+(3) SWAP 영역으로 초기화
+(4) SWAP 영역 연결
+ - 일회성 연결 - swapon
+   # swapon  DEVICE
+
+ - 영구 마운트
+   # vim /etc/fstab
+[DEVICE      swap        swap      MOUNT_OPTION    DUMP   FSCK ]
+
+
+(5) SWAP 영역 연결 해제
+   # swapoff  DEVICE
+
+------
+Ch06. LVM(Logical Volume Management)
+
+Volume?
+
+물리 볼륨(Physical Volume) : 논리볼륨에 디스크를 사용하기 위한 기본적인 단계
+볼륨 그룹(Volume Group) : 여러개의 물리 볼륨으로 구성된 집합
+논리 볼륨(Logical Volume) : LVM에서 데이터를 저장하기 위해 사용하는 볼륨
+
+PE(Physical Extent) : 물리 볼륨에서 사용하는 기본 데이터 저장 단위, 기본값 4MB
+LE(Logical Extent)  : 논리 볼륨에서 사용하는 기본 데이터 저장 단위
+
+LVM 디스크 작업 순서
+ 물리 볼륨 생성 (pvcreate)
+    # pvcreate  DEVICE
+
+ 볼륨 그룹 생성 (vgcreate)
+   # vgcreate  VGNAME  PV...
+
+ 논리 볼륨 생성 (lvcreate)
+   # lvcreate  -n  LVNAME  -L  LVSIZE   VGNAME
+
+
+
+
+
+
+
+
+
+
+
+

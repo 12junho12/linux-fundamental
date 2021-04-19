@@ -1,0 +1,176 @@
+﻿아카이브
+
+ - 다수의 파일을 하나로 묶는 것
+
+tar
+
+  $ tar   명령   아카이브파일  파일  [옵션]
+
+아카이브 생성
+  $  tar  cf   아카이브파일   파일
+
+아카이브 확인
+  $  tar  tf    아카이브파일
+
+아카이브 해제
+  $  tar  xf    아카이브파일
+
+
+
+압축 및 압축 해제
+
+compress
+  compress  파일
+  uncompress  파일
+
+gzip
+  gzip   파일
+  gunzip  파일
+  gzip  -d  파일
+
+bzip2
+  bzip2  파일
+  bunzip2  파일
+
+xz
+  xz  파일
+  unxz  파일
+
+
+zip
+
+
+----
+아카이브+압축
+
+gzip
+ $ tar  zcf  아카이브압축파일  파일
+
+ $ tar  ztf  아카이브압축파일
+
+ $ tar  zxf  아카이브압축파일
+
+
+bzip2
+ $ tar  jcf  아카이브압축파일  파일
+
+ $ tar  jtf  아카이브압축파일
+
+ $ tar  jxf  아카이브압축파일
+
+
+xz
+ $ tar  Jcf  아카이브압축파일  파일
+
+ $ tar  Jtf  아카이브압축파일
+
+ $ tar  Jxf  아카이브압축파일
+
+------
+========
+Ch01. 사용자 및 그룹 관리
+
+ - 사용자 : 시스템을 사용하는 사람
+ - 그   룹 : 공통점이 있는 사용자들을 묶어서 관리하기 위한 단위
+
+/etc/passwd : Unix/Linux 사용자 계정 데이터베이스 파일
+
+   USERNAME:PW:UID:GID:GECOS:HOME:SHELL
+
+  - USERNAME : 사용자 계정 이름
+  - PW : 사용자의 패스워드 (x - 현재는 /etc/shadow 파일에 따로 보관됨.)
+  - UID : 사용자를 관리하기 위한 고유한 ID
+  - GID : 사용자의 Primary 그룹의 GID
+  - GECOS : 사용자 계정 설명
+  - HOME : 사용자 홈디렉터리 경로
+  - SHELL : 사용자의 기본 쉘
+
+
+사용자 계정 추가
+  useradd  [option]  USER
+
+        옵션            설명
+    -c  COMMENT  사용자 계정에 대한 설명 
+    -d  HOME        사용자의 홈 디렉터리 설정
+    -m                  사용자의 홈 디렉터리가 존재하지 않을 경우 생성
+    -u  UID            사용자의 UID 값을 지정
+    -r                    사용자의 UID 값을 시스템 계정 UID 범위(199 ~ 999)에서 할당
+
+
+사용자 계정 수정
+  usermod  [option]  USER
+
+        옵션            설명
+    -c  COMMENT  사용자 계정에 대한 설명 
+    -d  HOME        사용자의 홈 디렉터리 변경
+    -m                  사용자의 홈 디렉터리가 존재하지 않을 경우 생성
+    -u  UID            사용자의 UID 값을 변경
+    -g  GID            사용자의 Primary Group 변경
+    -G  GID            사용자의 보조 그룹 변경
+    -a                    사용자의 보조 그룹 추가시 -G 와 함께 사용
+    -s   SHELL         사용자의 기본 쉘 변경
+    -o                   사용자 UID 지정시 중복을 허용함
+    -p  PASSWORD  패스워드 지정
+
+
+사용자 삭제
+ userdel  [option]  USER
+    -r       사용자 삭제시 사용자의 홈디렉터리 삭제
+
+
+
+그룹
+  기본 그룹 :  사용자 생성시 기본적으로 속하는 그룹
+  보조 그룹 :  기본 그룹 이외에 사용자가 속하는 그룹
+  /etc/group : 그룹 관리 데이터 파일. 그룹에 속하는 사용자를 확인할 수 있음
+
+   GROUP:GPW:GID:USERS
+
+그룹 추가
+   groupadd  [option]   GROUP
+
+        옵션            설명
+        -g  GID        그룹의 GID 지정
+        -r                그룹의 GID 값을 시스템 그룹(199 ~ 999)의 범위 내에서 GID 할당
+
+
+그룹 수정
+   groupmod   [option]   GROUP
+
+        옵션              설명
+         -g                그룹의 GID 변경
+         -n  NEWGRP  그룹의 이름 변경
+
+그룹 삭제
+   groupdel   GROUP
+
+
+---
+
+사용자 전환
+  - 현재 쉘에 로그인 중인 사용자를 전환하는 것
+
+su(Subsitute User)
+  $  su  [option]   [USER]
+     - 사용자 전환 명령어
+     - 전환하고자 하는 사용자의 패스워드 입력 후 전환
+
+  *   su  -l   USER
+     - 전환하고자 하는 사용자의 환경변수로 쉘을 초기화 한 후 사용자 전환
+     - 전환시 작업디렉터리가 초기화됨.(전환한 사용자의 홈디렉터리)
+
+  *   su       USER
+     - 이전 사용자가 사용하던 환경변수를 유지하면서 사용자 전환
+     - 전환 후에도 작업 디렉터리 경로가 유지됨.
+
+
+sudo
+    $  sudo   [option]    [command]
+     - 다른 사용자의 권한으로 작업 1회 수행 후 종료/사용자 전환
+     - 현재 사용자의 패스워드를 입력하여 명령어 수행
+
+    *  sudo  [option]   command
+      - 작업을 다른 사용자의 권한으로 수행 후에 종료
+       
+
+

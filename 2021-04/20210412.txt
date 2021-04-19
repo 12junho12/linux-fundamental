@@ -1,0 +1,96 @@
+﻿
+사용자 생성시 적용되는 기본값 설정
+useradd  -D  [option]   
+   옵션                    설명 
+  -b  DIR            사용자의 홈디렉터리 위치 경로 설정
+  -e  EXPIRE        사용자 계정만료일 설정(/etc/shadow)
+                       yyyy-mm-dd (2021-04-21)
+  -g  GID            사용자의 기본 그룹 설정
+  -s   SHELL         사용자의 기본 쉘 지정
+  
+---
+사용자 전환
+
+su
+
+ su      USER
+ su  -l  USER
+
+sudo
+
+
+------
+패스워드 정책
+
+/etc/shadow
+  USER:PW:LASTCHANGE:MIN:MAX:WARN:INACTIVE:EXPIRE:BLANK
+   LASTCHANGE : 패스워드 변경일
+   MIN : 패스워드 최소 사용기간
+   MAX : 패스워드 최대 사용기간
+   WARN : 패스워드 만료 전 변경 유도기간
+   INACTIVE : 패스워드 만료일 경과후 일정 기간 내의 패스워드 변경기간 
+   EXPIRE : 계정 만료일
+
+
+chage
+  $ chage   [option]   USER
+    옵션         설명 
+     -l            패스워드/계정 정책 확인
+  -d  NUM     LASTCHANGE 값 변경
+  -m  NUM    패스워드 최소 사용기간 지정
+  -M  NUM    패스워드 최대 사용기간 지정
+  -W  NUM    패스워드 만료 전 변경 안내 기간
+  -I    NUM    패스워드 만료 후 패스워드 변경 기간 지정
+ -E YYYY-mm-dd   계정 만료일 지정
+
+=======
+Ch02. 고급 권한 관리
+
+(1) 파일 소유권
+   chown  [option]   [USER][:GROUP]    FILE
+
+  (1) chown  USER             FILE
+  (2) chown  :GROUP         FILE
+  (3) chown  USER:GROUP   FILE
+
+(2) 확장 권한 
+
+  - SetUID(4) : 파일의 소유자의 권한으로 실행하는 확장권한
+  - SetGID(2) : 파일의 소유그룹의 권한으로 실행하는 확장권한
+  - Stickybit(1) : 다른 사용자가 생성한 파일을 삭제할 수 없도록 하는 확장권한
+
+                     파일                                   디렉터리
+SetUID    파일 소유자의 권한으로 실행
+SetGID    파일 소유그룹 권한으로 실행    디렉터리의 소유그룹 상속
+Stickybit                                            다른 사용자의 파일 삭제 불가
+
+
+ $ chmod  u+s  FILE
+ $ chmod  g+s  FILE
+ $ chmod  o+t  DIR
+
+- - - - -
+(3) POSIX ACL
+파일의 소유자, 소유그룹이 아닌 특정 사용자, 특정 그룹에게 권한을 할당 하는 권한 할당 방식
+
+마스크(mask)  : 최대로 할당 가능한 권한
+
+getfacl
+  $ getfacl  FILE
+      파일의 POSIX ACL 확인
+
+setfacl
+  $ setfacl  [option]     FILE
+
+POSIX ACL 지정
+  $ setfacl  -m  ACL_ENTRY  FILE
+               u::PERMS
+               u:USER:PERMS
+               g::PERMS
+               g:GROUP:PERMS
+               o::PERMS
+
+
+
+
+

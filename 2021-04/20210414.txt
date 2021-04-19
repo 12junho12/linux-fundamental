@@ -1,0 +1,161 @@
+﻿Ch02. 고급 권한 관리
+
+POSIX ACL
+
+getfacl
+setfacl
+
+(1) 일반 ACL
+ - 파일, 디렉터리에 적용하는 ACL
+
+POSIX ACL 설정
+  $  setfacl  -m  ACL_ENTRY   FILE
+
+POSIX ACL ENTRY 삭제
+  $  setfacl  -x   ACL_ENTRY   FILE
+
+POSIX ACL 초기화
+  $  setfacl  -b   FILE
+
+
+ACL ENTRY
+파일 소유자   u::PERMS
+특정 사용자   u:USER:PERMS
+소유 그룹      g::PERMS
+특정 그룹      g:GROUP:PERMS
+기타 사용자   o::PERMS
+
+
+(2) Default ACL
+ - 디렉터리에 적용하는 ACL
+
+Default ACL 설정
+  $ setfacl  -d   -m   DEF_ACL_ENTRY    FILE
+  $ setfacl  -m   DEFAULT_ACL_ENTRY   FILE
+
+Default ACL ENTRY 삭제
+  $  setfacl  -x   DEFAULT_ACL_ENTRY   FILE
+
+Default ACL 초기화
+  $  setfacl  -k   FILE
+
+
+Default ACL ENTRY
+파일 소유자   d:u::PERMS
+특정 사용자   d:u:USER:PERMS
+소유 그룹      d:g::PERMS
+특정 그룹      d:g:GROUP:PERMS
+기타 사용자   d:o::PERMS
+
+------
+Ch03. 작업 예약
+
+ - 일회성 작업 예약 - at
+ - 주기적 작업 예약 - cron
+
+(1)  at
+    $  at   [option]    [timespec]
+
+ - 작업 예약
+     $  at   TIMESPEC
+
+ - 작업 목록 확인
+    $  at  -l
+    $  atq
+
+ - 작업 내용 확인
+    $  at  -c  AT_ID
+
+ - 작업 삭제
+    $ at -d   AT_ID
+    $ atrm   AT_ID
+
+
+TIMESPEC
+ - hh:mm
+ - hh:mm  pm
+ - hh:mm  April  14  2021
+ - ddMMyy
+ - now
+ - noon
+ - teatime
+ - tomorrow
+
+(2)  cron
+ - 주기적으로 실행할 작업 예약
+ - System Cron
+ - User Cron
+
+crontab
+  - User Cron을 관리하는 명령어
+
+ 1) cron 작업 예약
+   $  crontab  -e
+
+ 2) cron 작업 확인
+   $  crontab   -l
+
+ 3) cron 작업 삭제(초기화)
+   $  crontab  -r
+
+
+<User Cron crontab 문법>
+분   시    일   월   요일    명령어
+
+메타 문자     설명
+     *           Always,  Don't Care
+     ,           복수 항목(목록)
+     -           연속된 범위
+     /           주기 지정          
+
+
+anacron
+  - cron과 유사하나 작업 예약 시점에 시스템 종료가 된 경우에도 부팅 시 해당 작업 실행
+  - /etc/anacrontab
+
+------
+Ch04. 디스크 관리
+
+디스크 구조
+
+플래터(Platter) 논리적 구조
+ - 트랙
+ - 섹터
+ - 실린더
+
+파티셔닝
+(1) MBR 파티셔닝
+  - BIOS 펌웨어를 사용하는 컴퓨터에서 사용되는 방식
+  - 최대 4개의 Primary 파티션을 만들 수 있음.
+  - 최대 용량 2TB 지원
+
+Primary Partiton : OS를 설치할 수 있는 파티션
+Extended Partition : Logical Partition의 정보를 담는 파티션, 데이터를 저장하지 않음.
+Logical Partition : OS를 설치할 수 없고 데이터만 저장 가능한 파티션
+
+
+(2) GPT 파티셔닝
+  - EFI/UEFI 펌웨어를 사용하는 컴퓨터에서 사용되는 방식
+  - 최대 128개의 파티션을 만들 수 있음.
+  - 최대 용량 8ZB 지원
+
+
+디스크 인터페이스
+E-IDE
+
+S-ATA
+
+SCSI
+
+SAS(SA-SCSI)
+
+
+
+
+
+
+
+
+
+
+

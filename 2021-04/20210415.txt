@@ -1,0 +1,103 @@
+﻿Ch04. 디스크 관리
+Ch05. 파일시스템
+
+디스크 구조
+
+Platter 논리적 구조
+ - Track
+ - Sector
+ - Cylinder
+
+
+파티셔닝
+ - 디스크의 공간을 구획하는 것
+
+(1) MBR Partitioning
+ - BIOS Firmware를 가진 컴퓨터에서 사용 가능
+ - Primary Partiton 4개 생성 가능
+ - 최대 용량 2TB까지 지원
+
+Primary Partiton : OS 설치가 가능한 파티션
+Extended Partiton : Logical 파티션의 정보를 담는 특수한 파티션. 데이터 저장 불가
+Logical Partiton : 데이터 저장은 가능하지만 OS 설치가 불가한 파티션
+
+
+(2) GPT Partitioning
+ - EFI/UEFI Firmware를 가진 컴퓨터에서 사용 가능
+ - 128개의 Partition 생성 가능
+ - 최대 8ZB까지 지원
+
+
+디스크 인터페이스
+E-IDE
+SATA
+SCSI
+SAS(Serial Attached SCSI)
+
+--
+Filesystem : 디스크에 데이터를 저장하고 관리하는 방식
+
+ - EXT2 / EXT3 / EXT4 : 리눅스 초기부터 개발되어 리눅스에서 기본적으로 사용하는 파일시스템
+ - XFS : CentOS7, Oracle Linux에서 기본 파일스템으로 사용하는 파일시스템
+ - FAT / FAT16 / FAT32 : Microsoft에서 개발한 파일 시스템 MS-DOS, Windows 9x, 메모리 카드에서 많이 사용
+ - exFAT : Microsoft에서 개발한 파일시스템, FAT32의 최대 파일크기 4GB 제한을 극복한 파일시스템
+ - NTFS : Windows NT 계열 운영체제에서 사용하는 파일시스템
+ - ISO9660 : CD에서 사용하는 파일시스템
+ - UDFS : DVD에서 데이터 저장용으로 사용하는 파일시스템
+
+
+파일시스템 초기화 명령어
+  $ mkfs   -t  FSTYPE   DEVICE
+
+
+마운트
+  $ mount  -t  FSTYPE   DEVICE   MOUNT_POINT
+
+ - 마운트 포인트 : 디스크 장치를 시스템에 연결하기 위해 사용하는 경로
+
+마운트 과정
+1. 마운트 포인트 생성
+    $ mkdir MOUNT_POINT
+2. 마운트
+    $  mount  -t  FSTYPE   DEVICE   MOUNT_POINT
+
+언마운트
+    $  umount  DEVICE
+
+--
+영구 마운트
+
+</etc/fstab>
+장치파일    마운트포인트     파일시스템    마운트_옵션     덤프유무   FSCK유무
+
+
+--
+swap 영역
+  - 물리적 메모리가 부족한 경우 잘 사용하지 않는 프로세스를 swap 영역으로 옮기고 새로운 프로세스를 실행시키기 위한 가상 메모리 영역
+
+파티셔닝 - fdisk
+swap 영역 초기화 - mkswap
+  # mkswap   DEVICE
+
+swap 영역 연결
+  # swapon   DEVICE
+
+swap 영역 연결 확인
+  # free           (메모리 상태 확인)
+  # swapon -s   (swap 영역 상세 확인)
+
+swap 영역 연결 해제
+  # swapoff   DEVICE
+
+* swap 영역 영구 마운트
+ # vim /etc/fstab
+DEVICE      swap      swap     MOUNT_OPTION   DUMP유무   FSCK유무
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,29 @@
+﻿리눅스 역사
+
+
+
+Q. 다음 작업디렉터리에서 대상 디렉터리까지의 절대경로와 상대경로를 구하시오.
+작업디렉터리 : /etc/cron.d
+대상 디렉터리 : /home
+
+A.
+절대 경로 :  /home
+상대 경로 :  ../../home
+
+----
+<< 명령어 >>
+
+ls
+pwd
+cd
+cat
+more
+head
+tail
+wc
+mkdir
+touch
+uname
+man
+
+

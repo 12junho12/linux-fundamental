@@ -1,0 +1,90 @@
+﻿Ch06. LVM
+
+LVM(Logical Volume Management)
+
+Physical Volume(물리 볼륨, PV) : LVM으로 디스크를 관리하기 위한 디스크의 기본적인 단계
+Volume Group(볼륨 그룹, VG) : 여러개의 Physical Volume으로 구성된 집합
+Logical Volume(논리 볼륨, LV) : LVM에서 데이터를 저장하기 위해 사용하는 Volume
+
+PE(Physical Extent) : Physical Volume에서 사용하는 기본 데이터 저장 단위(기본값 4M)
+LE(Logical Extent) : Logical Volume에서 사용하는 기본 데이터 저장 단위
+
+
+LVM 디스크 작업 순서
+(1) Physical Volume 생성
+(2) Volume Group 생성
+(3) Logical Volume 생성
+
+
+LVM 볼륨 정보 확인
+(1) Physical Volume 확인
+     # pvdisplay   DEVICE
+(2) Volume Group 확인
+     # vgdisplay   VGNAME
+(3) Logical Volume 확인
+     # lvdisplay    LV_DEVICE_PATH
+
+LVM 디스크 작업 순서(LVM 구성)
+(1) 새로운 디스크 추가
+(2) 파티셔닝 - fdisk
+    (system id :  8e  Linux LVM)
+ (2-1) 파티션 테이블 정보 갱신
+    # partprobe
+
+(3) Logical Volume 생성 과정
+ (3-1) # pvcreate  DEVICE
+ (3-2) # vgcreate  VGNAME  DEVICE...
+              -s  PE_SIZE   :  PE Size 지정
+ (3-3) # lvcreate  -n  LVNAME  -L  LVSIZE  VGNAME
+                                  or
+        # lvcreate  -n  LVNAME  -l  LE_NUM  VGNAME 
+
+(4) 파일시스템 초기화 - mkfs
+(5) 마운트
+(6) 마운트 해제
+
+1GB = 1024MB
+
+
+LVM 디스크 작업 순서(LVM 제거)
+(1) 마운트 연결 해제
+(2) Logical Volume 제거 과정
+ (2-1) # lvremove   LV_DEVICE
+ (2-2) # vgremove  VG_NAME
+ (2-3) # pvremove  PV_DEVICE
+
+(3) 파티션 제거 - fdisk
+
+
+논리볼륨 확장
+(1) 논리볼륨 용량 확장
+  # lvextend  -L LVSIZE  LV_DEVICE
+                or
+  # lvextend  -l  LE_NUM LV_DEVICE
+
+     +SIZE        : 상대적 용량 추가
+     +LE_NUM   : 상대적 LE갯수 추가
+     +100%FREE : 남은 용량 추가하여 용량 확장
+
+(2) 파일시스템 용량 확장
+  EXT 계열의 파일시스템 확장
+   # resize2fs  LV_DEVICE
+
+  XFS 파일시스템 확장
+   # xfs_growfs  LV_DEVICE
+
+ - 파일시스템 용량 확인
+   $ df  -h
+   $ df  -hT
+
+볼륨그룹 확장
+  # vgextend  VGNAME  PV...
+
+
+볼륨그룹 축소
+(1) Volume Group에서 PV 제거 전에 PV의 데이터 옮기기
+   # pvmove 데이터를_옮길_PV
+
+(2) PV를 Volume Group으로부터 제거 (Volume Group 축소)
+   # vgreduce  VGNAME  PV  
+

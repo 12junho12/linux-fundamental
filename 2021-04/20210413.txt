@@ -1,0 +1,83 @@
+﻿Ch02. 고급 권한 관리
+
+POSIX ACL
+
+getfacl
+setfacl
+
+(1) 일반 ACL
+ - 개별 파일, 디렉터리에 적용하는 ACL
+
+POSIX ACL 지정
+  $ setfacl   -m  ACL_ENTRY   FILE
+
+POSIX ACL ENTRY 제거
+  $ setfacl   -x   ACL_ENTRY   FILE
+
+POSIX ACL 초기화
+  $ setfacl   -b   FILE
+
+
+(2) Default ACL
+ - 디렉터리에 적용하는 ACL로 디렉터리 하위에 생성되는 파일에 ACL을 설정한다.
+
+Default ACL 지정
+  $ setfacl   -m  DEFAULT_ACL_ENTRY   DIRECTORY
+  $ setfacl   -d   -m  DEF_ACL_ENTRY    DIRECTORY
+
+Default ACL 삭제
+  $ setfacl   -x   DEFAULT_ACL_ENTRY    DIRECTORY
+
+Default ACL 초기화
+  $ setfacl   -k   DIRECTORY
+
+-----
+Ch03. 작업 예약
+
+ - 일회성 작업 예약
+ - 주기적 작업 예약
+
+(1) at
+   $  at   [option]    TIMESPEC
+
+TIMESPEC
+ - hh:mm
+ - hh:mm  am
+ - hh:mm May 1 2021
+ - ddMMyy
+ - now
+ - noon
+ - teatime
+
+
+(2) cron
+ - 주기적으로 실행되는 작업을 예약할 때 사용
+
+  $ crontab  [option]
+
+cron 작업 예약
+   $ crontab  -e
+
+crontab 작업 예약 확인
+   $ crontab   -l
+
+<crontab 파일 작성 문법>
+   분      시        일      월     요일       명령어
+(0~59) (0~23)  (1~31) (1~12) (0~6)       COMMAND
+
+4월 15일 오후 5시 50분
+50	17	15	4	X
+
+  메타 문자        설명
+       *              Always,  Don't care
+       -              연속된 범위 지정
+       ,               여러 값 구분자
+       /               조건에 따른 주기 지정
+
+
+
+
+
+
+
+
