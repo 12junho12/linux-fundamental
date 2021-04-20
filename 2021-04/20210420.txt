@@ -1,0 +1,150 @@
+﻿LVM
+
+LVM 작업 과정
+PV 생성
+VG 생성
+LV 생성
+
+볼륨그룹 확장
+ # vgextend   VGNAME  PV
+
+논리볼륨 확장
+ (1) 논리볼륨 확장
+    # lvextend  -L LVSIZE  LV_DEVICE
+    # lvextend -l  LV_NUM  LV_DEVICE
+
+ (2) 파일시스템 확장
+    EXT4
+    # resize2fs   LV_DEVICE
+
+    XFS
+    # xfs_growfs  LV_DEVICE
+
+볼륨그룹 축소
+(1) 볼륨 그룹에서 PV 제거
+ # pvmove   PV_DEVICE
+
+(2) 볼륨 그룹 축소
+ # vgreduce  VGNAME   PV_DEVICE
+
+
+----
+Ch07. Systemd
+
+Systemd
+  - 기존의 init 프로세스를 대체하는 프로세스로 최신 리눅스 배포판에서 도입된 PID 1번 프로세스
+
+Systemd 기능 및 특징
+ - init 기반의 시스템에 대한 호환성 제공
+ - systemd 유닛에 의한 제어
+ - 의존성 기반의 서비스 제어
+ - systemctl 사용자 정의 명령어 미지원
+ - systemd에 의해 실행된 서비스만 관리
+ - 시스템 종료시 실행중인 서비스만 중지
+ - 서비스에 5분의 timeout 적용
+ - 통합 로그 관리(systemd-journald)
+
+Systemd UNIT 종류
+ service unit - 서비스를 제공하기 위한 unit
+ socket unit - systemd에 의해 제어되는 IPC, 네트워크 소켓 등에 대한 정보를 가진 unit
+ device unit - Device 추가, 파티션 생성 등의 작업을 수행하면 생성되는 unit
+ mount unit - mount를 관리하는 unit
+ swap unit - swap 영역을 관리하는 unit
+ target unit - 부팅 타겟을 관리하는 unit
+ timer unit - 일정 주기마다 unit을 실행할 때 사용하는 unit
+
+UNIT 실행 상태 확인
+ - 실행중인 unit 확인
+   # systemctl list-units
+
+ - service unit 확인
+   # systemctl list-units --type service
+
+ - 시스템의 모든 unit 확인
+   # systemctl list-units --all
+
+
+유닛 제어 명령어 사용방법
+  # systemctl  SUBCOMMAND  UNIT
+
+ - UNIT 상태 확인
+   # systemctl   status  UNIT  
+
+ - UNIT 종료
+   # systemctl   stop   UNIT
+
+ - UNIT 실행
+   # systemctl   start   UNIT
+
+ - UNIT 리로드
+   # systemctl   reload  UNIT
+
+ - UNIT 재시작
+   # systemctl   restart  UNIT
+
+ - UNIT enable
+   # systemctl   enable   UNIT
+
+ - UNIT disable
+   # systemctl   disable   UNIT
+
+ - UNIT 마스킹
+   # systemctl  mask  UNIT
+
+ - UNIT 언마스킹
+   # systemctl  unmask  UNIT
+
+-----
+Ch08. 리눅스 부팅
+
+init 시스템의 부팅 과정
+
+runlevel : 부팅 모드
+
+runlevel 0 : halt
+runlevel 1 : single mode
+runlevel 2 : Multi-User without NFS
+runlevel 3 : Multi-User mode
+runlevel 4 : (reserved)
+runlevel 5 : X11 (Graphical)
+runlevel 6 : reboot
+
+
+Systemd 시스템의 부팅 과정
+
+target : Systemd 시스템의 부팅을 관리하는 UNIT
+
+ - default.target  : 시스템의 기본 부팅 타겟
+ - multi-user.target : Multi-User 사용이 가능한 CLI 환경 부팅 타겟
+ - graphical.target  : 그래픽 환경 사용이 가능한 Multi-User 부팅 타겟
+
+기본 부팅 타겟 확인
+ # systemctl  get-default
+
+기본 부팅 타겟 설정
+ # systemctl  set-default   TARGET_UNIT  
+
+부팅 타겟 런타임 전환
+ # systemctl    isolate       TARGET_UNIT
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
