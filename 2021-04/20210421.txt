@@ -1,0 +1,140 @@
+﻿Ch08. Systemd
+
+init
+ - 유닉스/리눅스에서 모든 프로세스의 부모 프로세스
+
+Systemd
+ - 리눅스 운영체제에서 모든 프로세스의 부모 프로세스가 되는 프로세스
+ - 기존의 init 을 대체하는 새로운 PID 1번 프로세스
+
+
+Systemd 특징
+ - init 프로세스에 대한 호환성 제공
+ - Systemd UNIT 사용하여 시스템 제어
+ - 시스템 부팅시 병렬로 서비스 시작
+ - 의존성 기반 서비스 제어
+ - systemctl 명령어 기반의 제어 및 명령어 커스터마이징 불가
+ - 시스템 종료시 실행중인 서비스만 종료
+ - 서비스 기본 timeout 지정(기본값 5분)
+ - 통합 로그 관리(systemd-journald)
+
+Systemd UNIT 종류
+ - service, device, mount, swap, target, timer, socket
+
+ service unit : 서비스를 관리하기 위한 UNIT
+ device unit : Device를 관리하기 위한 UNIT
+ mount unit : mount를 관리하기 위한 UNIT
+ target unit : 부팅 타겟(모드)을 관리하기 위한 UNIT
+ path unit :  PATH를 관리하기 위한 UNIT
+ timer unit : UNIT을 주기적으로 실행해야하는 경우 사용하는 UNIT
+ socket unit : IPC 통신, 네트워크 소켓을 관리하는 UNIT
+
+ - 유닛 경로 :  /usr/lib/systemd/system/    /etc/systemd/system/     /run/systemd/system/
+                   (기본 경로)
+
+UNIT 파일 구성
+[Unit] 섹션 : 유닛 설명, 유닛 동작, 다른 유닛과의 의존성
+[UnitType] 섹션 : 유닛 타입에 대한 구성
+[Install] 섹션 : 부팅시 자동 실행에 관련된 구성
+
+
+systemctl
+  # systemctl   SUBCOMMAND   [UNIT]    [option]
+
+실행중인 UNIT 확인
+ # systemctl   list-units
+  UNIT : 유닛 이름
+  LOAD : 설치 상태 (loaded 인 경우 정상 설치)
+  ACTIVE : UNIT 실행 여부 (active, inactive)
+  SUB : UNIT 실행 세부 상태 
+     running : UNIT이 정상 실행된 상태
+     exited : UNIT이 실행되어있지만 systemd에서 관리하지 않는 상태
+     waiting : UNIT이 이벤트를 대기하는 상태
+     mounted : 마운트 상태
+     plugged : Device Unit이 연결된 상태
+     dead : UNIT이 종료된 상태
+     listening : Socket Unit이 접속 대기하는 상태
+  DESCRIPTION : Unit 설명
+
+UNIT 목록 확인(시스템 부팅시 자동 시작 여부 확인)
+ # systemctl  list-unit-files
+   enabled : 부팅시 자동 시작
+   disabled : 부팅시 자동 시작하지 않음
+   static : 사용자가 직접 실행 불가하며 다른 UNIT에 의해 실행됨.
+   masked : mask 상태
+
+
+systemctl  status  UNIT
+systemctl  start   UNIT
+systemctl  stop   UNIT
+systemctl  restart  UNIT
+systemctl  reload  UNIT
+
+systemctl  enable  UNIT
+systemctl  disable  UNIT
+
+systemctl  mask    UNIT
+systemctl  unmask  UNIT
+
+
+-----
+Ch08. 리눅스 부팅
+
+init 시스템
+  runlevel
+
+systemd 시스템
+  target
+
+multi-user.target  : Multi-User 사용이 가능한 부팅 타겟(CLI)
+graphical.target   : Multi-User 사용이 가능한 부팅 타겟(GUI)
+
+default.target : 시스템 기본 부팅 타겟
+
+local-fs.target : 파일시스템 마운트
+
+<부팅 관련 문제 해결을 위한 부팅 타겟>
+emergency.target : 로그인 필요, 
+rescue.target       : 로그인 필요, 
+
+
+
+<부팅 관련 문제 해결>
+(1) root 사용자 패스워드 분실
+<root 사용자 패스워드 재설정>
+
+  1. 호스트 전원을 끈 후 부팅 시작
+  2. 부트 로더 편집을 위해 커서키를 눌러 boot 메뉴 선택 timer를 정지
+  3. 부팅 명령줄 편집을 위해 'e' 키를 눌러 편집 모드로 진입
+  4. linux16 ~~ 행으로 이동한 후 행의 맨 끝으로 이동한 다음 한칸 띄움
+  5.   rd.break  입력 후 [Ctrl]+[x]를 눌러 편집한 커널 파라미터로 부팅을 진행
+  6. 부팅 도중 멈춘 후  쉘이  switch_root#  으로 변하면 초기 루트 파일시스템으로 진입
+  7.  switch_root#  mount
+  8.  switch_root#  mount  -o  remount,rw  /sysroot
+  9.  switch_root#  chroot  /sysroot
+ 10.  쉘 프롬프트가 변경되면 root 사용자의 패스워드를 재설정한다.
+       sh-x.x#  passwd
+ 11.  SELinux 보안 컨텍스트 Relabeling을 위해 다음 명령어를 입력한다.
+       sh-x.x#  touch  /.autorelabel
+ 12.  exit  2회 입력하여 작업을 종료한다.
+       (재부팅이 진행되면서 시간이 다소 지연되는데 이 과정에서 SELinux 보안 레이블 Relabeling 작업이 진행된다.)
+  
+
+(2) 부팅 장애
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
