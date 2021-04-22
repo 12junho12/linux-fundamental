@@ -1,0 +1,120 @@
+﻿Ch08. 리눅스 부팅
+
+init 시스템
+  runlevel
+
+systemd 시스템
+  target
+
+multi-user.target : CLI 환경을 지원하는 Multi-User 부팅 타겟
+graphical.target  : GUI 환경을 지원하는 Multi-User 부팅 타겟
+
+default.target : 기본 부팅 타겟 지정시 사용하는 타겟 
+
+<부팅 관련 문제 발생시 사용하는 부팅 타겟>
+emergency.target : 부팅 관련 문제 해결을 위한 타겟으로 루트 사용자 로그인이 필요. 루트 파일시스템 ro 마운트
+rescue.target       : 부팅 관련 문제 해결을 위한 타겟으로 루트 사용자 로그인이 필요. 루트 파일시스템 rw 마운트
+
+
+<부팅 관련 문제>
+ - 부팅이 정상적으로 이뤄지지 않는 경우
+(1) 부팅 영역 손상
+(2) 파일시스템 관련 문제
+
+-----
+Ch09. 로그 관리
+
+syslog(rsyslogd)
+
+Journal Log(systemd-journald)
+
+
+syslog
+ - 유닉스, 리눅스에서 사용하는 기본 로그(init)
+ - 로그 저장 경로 :  /var/log/
+ - 로그 저장 포맷 : Text
+ - Facility와 Priority에 따라 선별적으로 저장됨.
+ - 설정 파일 : /etc/rsyslog.conf
+
+Journal Log
+ - systemd 시스템에서 추가된 로그 관리 방식
+ - 로그 저장 경로 :  /run/log/journal/
+ - 로그 저장 포맷 :  바이너리
+ - 부팅 시 부터 모든 로그 기록
+ - 재부팅 시 로그가 사라짐
+
+journalctl 
+
+  journalctl 
+
+ 우선순위 지정
+  # journalctl  -p  PRI
+
+ 우선순위 범위 지정
+  # journalctl  -p  START..END
+
+ 최근 로그 부터 확인
+  # journalctl  -r
+
+ 최근 로그 갯수 지정하여 확인
+  # journalctl  -n  NUM
+
+ 특정 시점 이후 발생된 로그 확인
+ # journalctl  --since  2021-04-22
+ # journalctl  --since  01:00:00
+ # journalctl  --since  "2021-04-22 01:00:00"
+
+ 특정 시점 이전에 발생된 로그 확인
+ # journalctl  --until  2021-04-23
+ # journalctl  --until  13:00
+ # journalctl  --until  "2021-04-22 15:00"
+
+ * 기간 지정
+ # journalctl  --since "2021-04-01 00:00"  --until "2021-04-22 16:00"
+
+ 출력 방식 지정
+  # journalctl  -o OUTPUT_FORMAT
+    short : 간결한 형태(기본값)
+    verbose : 자세히 표시
+    json : JSON 포맷으로 표시
+
+Journal Log 필드를 이용한 검색
+
+  _PID  :  PID 지정
+  _UID  :  프로세스 실행 사용자 기준 검색
+  _COMM : 명령어 지정
+  _SYSTEMD_UNIT : Systemd UNIT 기준 검색
+
+-----
+Ch10. 패키지 관리
+
+RPM(Red Hat Package Manager)
+ - Red Hat 계열의 리눅스 배포판에서 소프트웨어를 설치할 수 있도록 관리하는 도구
+ - 의존성 문제
+
+( httpd-2.4.6-40.el7.centos.x86_64.rpm )
+    (1)    (2)        (3)           (4)
+ 
+ (1) 패키지 이름
+ (2) 버전
+ (3) Release (리눅스 배포판 버전 포함)
+ (4) 아키텍쳐
+
+YUM(Yellowdog Updater Modified)
+ - RPM 패키지를 고수준으로 관리
+ - 저장소(Repository)를 사용하여 패키지를 다운로드 받아 설치
+ - 패키지 설치시 의존성 검사 후 필요한 패키지를 같이 설치
+ - 기본적으로는 네트워크 연결이 되어있어야 사용 가능함.
+
+
+
+
+
+
+
+
+
+
+
+
+
