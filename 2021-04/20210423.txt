@@ -1,0 +1,186 @@
+﻿Ch09. 로그 관리
+
+ - syslog
+ - Journal Log
+
+
+syslog
+ - 유닉스/리눅스 시스템에서 사용하는 기본 로그(init)
+ - 로그 저장 경로 : /var/log
+ - 로그 저장 포맷 : Text
+ - 구성 파일 : /etc/rsyslog.conf
+
+
+logrotate
+ - 로그 파일 저장 시 사용 빈도가 높은 시스템의 경우 로그의 양도 증가함.
+ - 로그 파일의 크기가 너무 크면 로그 파일 읽고 쓰기에 많은 부하가 발생함.
+ - 로그를 일정 주기/용량 기준으로 분할하고 시스템에 유지하는 로그의 갯수를 제한하는 것.
+ - logrotate 전역 설정 파일 :  /etc/logrotate.conf
+
+============
+<logrotate 실습>
+1. logrotate 구성파일 작성
+  # touch /etc/logrotate.d/logstudy
+  # vim /etc/logrotate.d/logstudy
+=====
+/var/log/logstudy.log {
+	size=3k
+	create 600 root sys
+	rotate 3
+	nodateext
+}
+=====
+2. 해당 로그 생성
+   # touch /var/log/logstudy.log
+
+3. logrotate 기준 충족(주기, 용량)
+
+4. logrotate 수행
+   # logrotate  /etc/logrotate.conf
+
+============
+
+Journal Log
+ - systemd 시스템의 기본 로그 관리 방식
+ - 로그 저장 경로 :  /run/log/journal/
+ - 로그 저장 포맷 : Binary
+ - 로그를 볼 수 있는 별도의 명령어(journalctl) 사용
+ - 부팅 시부터 발생한 모든 로그를 기록
+
+
+FACILITY.PRIORITY
+
+Facility
+
+kern	Kernel 관련 메시지
+user	User Level 관련 메시지
+mail	Mail 관련 메시지
+daemon	시스템의 데몬 관련 메시지
+auth	인증과 관련된 메시지
+syslog	Syslog가 생산하는 메시지
+lpr	Line Printer 관련 메시지
+news	News 그룹 관련 메시지
+uucp	UUCP 관련 메시지
+cron	crond와 관련된 메시지
+authpriv	보안 인증 및 인가 메시지
+ftp	FTP 서비스 관련 메시지
+local0-local7	사용자 정의 Facility (단, local7은 부팅 로그 기록용으로 사용)
+
+
+Priority
+emerg	시스템에 아주 심각한 문제가 발생하여 시스템 사용 불가 (Kernel Panic)
+alert	즉시 조치를 취해야하는 심각한 상황이나 시스템 사용 가능
+crit	치명적인 상태
+err, error	에러 발생 상태
+warn, warning	에러는 아니지만 잠재적으로 발생할 수 있는 문제 경고
+notice	일반적인 정보이지만 중요한 정보
+info	단순 정보
+debug	디버깅에 활용 되는 디버깅 메시지 정보
+
+
+lpr의 notice priority 이상 로그를    /var/log/log_lpr  에 기록
+kernel의 error 이상 로그를            /var/log/log_kernel_important  에 기록
+모든 Facility의 error 이상 로그를    /var/log/log_everything_important  에 기록
+kernel 로그를 제외한 모든 Facility의 error 이상 로그를    /var/log/log_fundamental_important  에 기록
+
+
+Journal Log
+
+  journalctl  [option]  [name]
+
+-p
+-r
+-n NUM
+--since [DATE] [TIME]
+--until [DATE] [TIME]
+-o  OUTPUT_FORMAT
+     short
+     verbose
+     json
+
+필드
+_PID : PID 지정
+_UID : 프로세스 실행한 사용자 지정
+_COMM : 명령어 지정
+_SYSTEMD_UNIT : Systemd UNIT 지정
+
+
+<Journal Log 영구 저장 실습>
+
+ # mkdir  /var/log/journal
+ # chgrp   systemd-journal  /var/log/journal
+ # chmod  2755  /var/log/journal
+ # systemctl  reboot
+
+ * Journal Log 영구 저장시 Journal Log 저장 용량에 주의 필요!
+
+
+-------
+Ch10. 패키지 관리
+
+ - 소스 컴파일 설치(수동 설치)
+ - 패키지 관리자 이용 설치
+
+RPM(Red Hat Package Manager)
+ - Red Hat 계열 리눅스에서 소프트웨어 설치 시 사용하는 패키지 관리 도구
+ - 의존성 문제
+ - 패키지명-버전-릴리즈_정보.아키텍쳐.rpm
+
+YUM(Yellowdog Update Modifier)
+ - RPM 패키지를 고 수준으로 관리
+ - Repository를 통해 패키지를 다운로드 받아 설치
+ - 의존성을 가진 패키지를 검사하여 함께 다운로드 받아 설치
+ - 기본적으로 네트워크 접근이 가능해야 서비스 이용 가능함.
+
+ # yum SUBCOMMAND  NAME  OPTION
+
+패키지 설치
+ # yum install PACKAGE
+
+패키지 업데이트
+ # yum update PACKAGE
+
+패키지 제거
+ # yum remove  PACKAGE
+
+패키지 정보 확인
+ # yum info PACKAGE
+
+패키지 검색
+ # yum search PACKAGE
+
+패키지 관련 파일 확인
+ # yum provides  FILE_PATH
+
+그룹 패키지 목록 확인
+ # yum groups  list
+
+그룹 패키지 정보 확인
+ # yum groups  info  'GROUP_PACKAGE'
+
+그룹 패키지 설치
+ # yum groups install  'GROUP_PACKAGE'
+
+그룹 패키지 업데이트
+ # yum groups update  'GROUP_PACKAGE'
+
+그룹 패키지 제거
+ # yum groups remove  'GROUP_PACKAGE'
+
+
+YUM 작업 기록
+(1) 작업 로그 : /var/log/yum.log
+(2) history :  # yum  history
+
+
+
+
+
+
+
+
+
+
+
+
+
