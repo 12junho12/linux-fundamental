@@ -1,0 +1,169 @@
+﻿Ch10. 패키지 관리
+
+ - 소스 컴파일 설치(수동 설치)
+ - 패키지 관리자 이용 설치
+
+RPM(Red Hat Package Manager)
+ - Red Hat 계열 리눅스에서 소프트웨어 설치 시 사용하는 패키지 관리 도구
+ - 패키지명-버전-릴리즈_정보.아키텍쳐.rpm
+
+YUM(Yellowdog Update Modifier)
+ - RPM 패키지를 고 수준으로 관리
+ - Repository를 통해 패키지를 다운로드 받아 설치
+ - 기본적으로 Repository 연결을 위해 네트워크 연결이 필요함.
+
+
+ # yum SUBCOMMAND  NAME  [OPTION]
+
+패키지 설치
+ # yum  install  PACKAGE
+
+패키지 업데이트
+ # yum  update  PACKAGE
+
+패키지 제거
+ # yum  remove  PACKAGE
+
+패키지 정보 확인
+ # yum  info  PACKAGE
+
+패키지 검색
+ # yum  search  PACKAGE
+
+패키지 관련 파일 확인
+ # yum  provides  FILE_PATH
+
+그룹 패키지 목록 확인
+ # yum  groups  list
+
+그룹 패키지 정보 확인
+ # yum  groups  info  PACKAGE
+
+그룹 패키지 설치
+ # yum  groups  install  PACKAGE
+
+그룹 패키지 업데이트
+ # yum  groups  update  PACKAGE
+
+그룹 패키지 제거
+ # yum  groups  remove  PACKAGE
+
+
+작업 내역 확인
+로그 파일 : /var/log/yum.log
+히스토리 목록 :  yum history
+
+YUM 트렌젝션 확인
+ # yum  history  info T_ID
+
+YUM 트렌젝션 undo
+ # yum  history  undo  T_ID
+
+
+Repository 관리
+Repository 구성 파일 :  /etc/yum.repos.d/
+  Repository FILE : FILENAME.repo
+
+Repository 구성파일
+
+======
+[REPO_ID]
+name=Repository Name
+baseurl=http://mirror.centos.org/centos/7/os/x86_64/
+enabled=1
+gpgcheck=0
+gpgkey=GPGKEY_FILE                           // 만약 gpgcheck=0이면 생략
+
+======
+
+RPM 패키지 도구로 패키지 관리
+
+패키지 설치
+ # rpm  -ivh  PACKAGE_FILE
+
+패키지 업데이트
+ # rpm  -Uvh  PACKAGE_FILE
+
+패키지 제거
+ # rpm  -e    PACKAGE_NAME
+
+시스템에 설치된 패키지 확인
+ # rpm  -q  -a 
+
+특정 패키지 설치여부 확인
+ # rpm  -q  -a  |  grep  PACKAGE
+
+파일 지정하여 관련 패키지 확인
+ # rpm  -q  -f  FILE_PATH
+
+패키지와 관련있는 문서 확인
+ # rpm  -q  -d  PACKAGE
+
+설치된 특정 패키지 정보 확인
+ # rpm  -q  -i   PACKAGE
+
+
+-----
+Ch11. Network 관리 (NetworkManager)
+
+NIC(Network Interface Card) 
+ - 네트워크에 연결하여 통신을 하기 위한 네트워크 카드
+
+IP 주소 : 네트워크에서 호스트를 식별하기 위한 논리적 주소
+            192.168.0.11
+
+서브넷 마스크 : 네트워크 ID와 호스트 ID를 구별하기 위해 사용하는 마스크 값
+                     255.255.255.0
+게이트웨이 : 외부 네트워크로 통신을 하기 위하여 거치는 관문
+
+
+NetworkManager 
+ - Systemd 시스템에서 사용하는 기본 네트워크 관리 서비스
+ - Connection을 사용하여 하나의 네트워크 카드가 다수의 Connection을 가질 수 있다.
+ - 단, 이 때 하나의 네트워크 카드는 동시에 하나의 Connection을 연결할 수 있다.
+
+ # nmcli  SUBCOMMAND  
+(192.168.56.101)
+
+커넥션 목록 확인
+ # nmcli  connection  show
+
+특정 커넥션 정보 확인
+ # nmcli  connection  show   CONNECTION
+
+네트워크 디바이스 목록 확인
+ # nmcli  device  status
+
+커넥션 생성
+ # nmcli  connection  add  con-name  CONN  type  ethernet   ifname  NIC_DEVICE 
+
+커넥션 연결
+ # nmcli  connection   up   CONN
+
+커넥션 수정
+ # nmcli  connection  modify   CONN   FIELD   VALUE  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
