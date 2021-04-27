@@ -1,0 +1,137 @@
+﻿Ch11. NetworkManager
+
+NIC(Network Interface Card) : 
+  컴퓨터가 네트워크에 물리적으로 연결하기 위해 사용하는 네트워크 카드
+
+IP 주소 : 네트워크 상에서 호스트 끼리 식별하기 위한 논리적 주소
+서브넷 마스크 : IP 주소에서 Network ID와 Host ID를 구별하기 위한 마스크 값
+게이트웨이 : 다른 네트워크와 통신하기 위해 거치는 관문
+
+
+NetworkManager
+ - systemd 시스템에서 사용하는 기본 네트워크 관리 서비스
+ - Connection을 사용하여 네트워크 구성을 관리함
+ - 하나의 네트워크 카드는 여러개의 Connection을 가질 수 있음.
+ - 하나의 네트워크 카드는 동시에 하나의 활성 Connection을 가짐.
+
+  # nmcli  SUBCOMMAND  
+
+Connection 목록 확인
+  # nmcli  connection  show 
+
+Connection 생성
+  # nmcli  connection  add
+
+ 커넥션 이름
+ NIC 종류
+ NIC 이름
+
+Connection 수정
+   # nmcli connection modify   CONN  FIELD   VALUE
+
+Connection 연결
+  # nmcli  connection  up   CONN
+
+Device 목록 확인
+  # nmcli   device  status
+
+특정 Device 구성 확인
+  # nmcli   device  show   DEVICE
+
+
+-----
+<새로운 커넥션 추가 및 구성 방법>
+
+(1) 커넥션 생성
+  # nmcli  connection  add con-name CONN type ethernet ifname NIC_NAME
+
+(2) 커넥션 수정
+  # nmcli  connection  modify  CONN  ipv4.addresses  x.x.x.x/24
+  # nmcli  connection  modify  CONN  ipv4.gateway  x.x.x.x
+  # nmcli  connection  modify  CONN  ipv4.dns  x.x.x.x
+  # nmcli  connection  modify  CONN  ipv4.method  manual
+
+(3) 커넥션 연결
+  # nmcli  connection  up  CONN
+------------
+
+
+
+== 문제 ==
+
+NIC : enp0s3
+Connection : linuxstudy
+IP : 10.0.2.25/24
+GW : 10.0.2.1
+DNS : 168.126.63.3
+--------------
+
+
+파일 수정을 통한 네트워크 구성 변경(수동)
+ - /etc/sysconfig/network-scripts/ 경로 내의  ifcfg-XXXX 파일 수정
+
+====
+TYPE=Ethernet   // 네트워크 카드 종류
+BOOTPRO=dhcp // IP 주소 할당 방식  (자동 : dhcp, 수동 : none)
+NAME="manual" // Connection 이름
+DEVICE="enp0s3" // 네트워크 카드 이름
+ONBOOT="yes"    // 네트워크 자동 활성화 여부
+IPADDR=x.x.x.x    // IP주소(IPv4)
+PREFIX=xx           // Prefix
+GATEWAY=x.x.x.x // 게이트웨이 주소
+DNS1=x.x.x.x       // DNS 서버 주소(1부터 시작) & DNS 서버 우선순위 지정
+=====
+
+
+Hostname : 각 호스트를 구별하기 위한 컴퓨터 이름
+
+Hostname 종류
+ - Transient Hostname : 커널이 관리하는 Hostname
+ - Static Hostname : 사용자가 지정한 Hostname
+
+Hostname 관리 파일 :  /etc/hostname
+
+Hostname 관리 명령어
+ - hostname
+ - hostnamectl
+
+Hostname 확인 명령어
+  # hostname
+  # hostnamectl
+
+Hostname 설정
+ (1) /etc/hostname 파일 수정
+ (2) hostname 설정 (runtime)
+      # hostname  HOSTNAME
+ (3) hostname 설정 
+      # hostnamectl  set-hostname  HOSTNAME
+ (4) hostname 제거
+      # hostnamectl  set-hostname  ""
+
+-----
+Ch12. SSH (OpenSSH)
+
+SSH(Secure SHell)
+ - 원격접속 프로토콜로 전송 구간을 암호화함.
+
+/etc/ssh  - SSH Client 및 Server 구성 파일 경로
+~/.ssh     - 사용자 별 SSH 구성파일, KEY
+  known_hosts  : 접속 Host 및 접속 Host의 Host Key(공개키)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
