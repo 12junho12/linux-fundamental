@@ -1,0 +1,172 @@
+﻿Ch11. NetworkManager
+
+nmcli
+
+
+Hostname
+ - 네트워크 상에서 각각의 컴퓨터를 구별하기 위한 이름
+
+Hostname
+ - Transient Hostname : 커널이 관리하는 Hostname
+ - Static Hostname : 사용자가 지정하는 Hostname (영구설정)
+ - Pretty Hostname : 해당 Host를 설명하기 위해 사용하는 Hostname
+
+Hostname
+  - FILE :   /etc/hostname
+  - hostname 명령어 사용
+  - 파일 편집
+  - hostnamectl  set-hostname  HOSTNAME
+
+
+-----
+Ch12. OpenSSH
+
+SSH
+
+SSH Client 사용방법
+
+ $ ssh  [option]   [USER]@HOST
+
+대상 호스트의 사용자 계정 지정 접속
+ $ ssh  USER@HOST
+
+현재 사용자와 동일한 UID로 접속
+ $ ssh  HOST
+
+원격 시스템의 그래픽 어플리케이션 실행 및 표시(X11)
+ $ ssh  -X  USER@HOST
+
+원격 시스템에 명령어를 한번 실행 후 접속 종료
+ $ ssh  USER@HOST   COMMAND
+
+
+<키 기반 인증 사용하기>
+1. 키 페어 생성
+  $ ssh-keygen
+
+2. 공개키 배포
+  $ ssh-copy-id   USER@HOST 
+
+  * 키 기반 인증 사용시 패스워드 인증 접속은 불가하다.
+
+
+
+
+==== </etc/ssh/sshd_config  구성파일 주요 내용> ==
+Listen 22  // 서비스 대기 포트
+ListenAddress  x.x.x.x  // 서비스 대기 IP주소
+HostKey FILE              // 호스트키
+
+SyslogFacility  AUTH   // Syslog 기록시 Facility 지정
+
+LogingraceTime  2m  // 로그인 시 완료까지 대기 시간
+PermitRootLogin  yes  // root 사용자 로그인 허용 여부
+
+PasswordAuthentication  yes  // SSH 인증방식 지정 (패스워드 방식 인증)
+=====
+
+SCP
+ - SSH 프로토콜을 사용하여 네트워크 상의 호스트에 파일을 복사할 수 있는 도구
+
+  $  scp  [option]   SOURCE    DESTINATION
+      * -r    : 디렉터리 복사시 사용 옵션
+
+1. 현재 호스트에서 다른 호스트로 파일 복사
+  $  scp  /etc/hosts   user@192.168.56.12:/tmp
+
+2. 다른 호스트의 파일을 현재 호스트로 파일 복사
+  $  scp  user@192.168.56.12:/etc/resolv.conf  /tmp
+
+---------
+Ch13. NTP(Network Time Protocol) - 시간 동기화
+
+NTP(Network Time Protocol)
+  - 네트워크 기반의 시간 동기화 프로토콜
+  - Stratum 이란 단위로 계층적인 구조를 가짐.
+
+Stratum 0 ~ 15
+  - Stratum 0 에 가까울 수록 정밀도가 높은 시간을 획득함.
+
+Stratum 0 : 가장 정밀도가 높은 계층으로 Primary Reference Clock이라고 함.
+                 원자시계, GPS가 해당됨.
+
+Stratum 1 : Stratum 0로부터 시간정보를 수신하고 동기화 하는 계층
+                일반 Host 들이 사용 가능한 최상위 계층임.
+                Stratum 2 이외에는 시간정보를 제공하지 않도록 구성함.
+
+Stratum 2 : Stratum 1으로부터 시간정보를 수신하고 동기화하는 계층
+                일반적인 시간 동기화 요청에 대해 응답하는 NTP 서버
+
+Stratum n : 자신보다 상위 계층으로부터 시간을 동기화함.
+
+chrony
+  - CentOS7에서 네트워크 시간 동기화를 관리하기 위해 사용하는 기본 패키지
+  - chrony는 서버(chronyd)와 클라이언트(chronyc)로 구성되어있음.
+  - 구성 파일 :  /etc/chrony.conf
+
+
+로컬 시간 동기화 정보 확인
+  $  chronyc  tracking
+
+  - Reference ID  : 동기화된 서버 정보
+  - Stratum :  현재 시스템의 Stratum 계층 정보
+  - Ref time(UTC) :  기준이 되는 시간 정보
+  - System time :  NTP Time Server와의 시간 오차
+  - Update interval :  동기화 업데이트 간격
+
+
+시간 동기화 소스(NTP 서버) 확인
+  $   chronyc  sources
+
+시간 동기화 소스(NTP 서버) 확인 - 세부 정보 확인
+  $   chronyc  sources  -v
+
+  M : Mode
+      ^ : Server    = : Peer     # : Local
+  S  : State
+      * : 현재 동기화되는 소스  + : 사용 가능한 소스    - : 사용가능하지만 제외됨
+      ? : 연결이 안됨               x : 시간이 부정확함     ~ : 시간 변동 폭이 큼
+
+  Poll :  측정 간격
+  Reach : 전송에 대한 유효 응답 횟수
+  LastRx :  서버로부터 마지막 샘플을 받은 시간
+  LastSample :  마지막 측정시 로컬 시간과의 오차 범위
+
+수동으로 시간 설정
+
+  $ date  --set  [날짜] [시간]  
+  $ date  MMDDhhmmyy
+
+
+시간 정보 확인
+  $ timedatectl  
+  $ timedatectl  status
+
+Time Zone 목록 확인
+  $ timedatectl  list-timezones
+
+Time Zone 설정
+  $ timedatectl  set-timezone  TIMEZONE
+
+수동으로 시간 설정
+  $ timedatectl  set-time  TIME
+
+NTP 서버 사용 여부 지정
+  $ timedatectl  set-ntp   true
+  $ timedatectl  set-ntp   false
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
