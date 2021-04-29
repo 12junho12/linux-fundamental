@@ -1,0 +1,207 @@
+﻿Ch13. NTP (chronyd)
+
+NTP(Network Time Protocol)
+  - 네트워크를 통해 Time Server로부터 시간을 동기화 하는 프로토콜
+  - Stratum 계층을 나눠서 관리
+
+Stratum 0 ~ 15
+
+Stratum 0  Primary Reference Clock 이라고 함
+                원자시계, GPS 
+
+Stratum 1  Stratum 0로부터 시간을 동기화하는 계층
+                일반 Host들이 시간 동기화할 수 있는 가장 최상위 계층이지만
+                Stratum 2에 대해서만 동기화를 하도록 일반적으로 구성함.
+
+Stratum 2  Stratum 1으로부터 시간 동기화를 받음
+                일반 Host들이 동기화할 수 있는 계층
+
+
+
+chrony
+  - RHEL7, CentOS7, Oracle Linux 7에서 시간 동기화를 관리하는 소프트웨어 패키지
+  - Server(chronyd)와 Client(chrony)로 구성됨
+  - 구성 파일 :  /etc/chrony.conf
+
+
+
+시간 수동 설정
+
+ $ date
+ $ date   --set  YYYY-mm-dd  hh:mm:ss
+ $ date  MMDDhhmmyy
+
+ $ timedatectl  set-time  
+
+시간 정보 확인
+ $ timedatectl
+ $ timedatectl  status
+
+Time Zone 목록 확인
+ $ timedatectl  list-timezones
+
+Time Zone 변경
+ $ timedatectl  set-timezone  TIMEZONE
+
+NTP 사용 설정
+ $ timedatectl  set-ntp   true
+ $ timedatectl  set-ntp   false
+
+
+-----
+Ch14. 방화벽 (Firewall)  - firewalld
+
+방화벽
+  - 비 인가된 접근을 차단하는 장비/소프트웨어
+  - 네트워크 상에서 인가되지 않은 접근 시도를 차단함.
+  - 허용된 서비스/포트만 접근이 가능하도록 함.
+  - 방화벽 구성은  Runtime Configuration, Permanent Configuration 으로 구성됨.
+    ( --permanent    추가 시 Permanent Configuration 설정 )
+
+ipchain
+iptables
+firewalld
+
+firewalld
+  - CentOS7에서 사용하는 기본 방화벽 서비스
+  - XML 형태로 구성파일 보관
+  - Predefined Zone 으로 방화벽을 관리함.
+  - D-Bus 사용
+
+Predefine Zone
+ - block*     : 모든 패킷 거부(reject)
+                 단, 내부에서 외부로의 반환은 허용
+ - dmz       : 내부로 들어오는 패킷 거부(reject)
+                  외부로 연결, ssh 서비스는 허용
+ - drop*      : 내부로 들어오는 모든 패킷을 폐기
+                  외부로의 연결만 허용
+ - external  : 내부로 들어는 패킷 거부
+                  외부로의 연결, ssh 서비스는 허용
+ - home     : 내부로 들어오는 패킷 거부
+                  dhcpv6, ipp-client, mdns, samba-client, ssh 허용
+ - internal  : 내부로 들어오는 패킷 거부
+                 dhcpv6, ipp-client, mdns, samba-client, ssh 허용
+ - public    : Default Zone
+                 내부로 들어오는 패킷 거부
+                 ssh, dhcpv6-client 허용
+ - trusted*   : 모든 패킷 허용
+ - work      : 내부로 들어오는 패킷 거부
+                  dhcpv6-client, ipp-client, ssh 허용
+
+
+방화벽 서비스 상태 확인
+  # firewall-cmd  --state
+
+Predefined Zone 확인
+  # firewall-cmd  --get-zones
+
+Predefined Services 확인
+  # firewall-cmd  --get-services
+
+활성 Zone 확인
+  # firewall-cmd  --get-active-zones
+
+Default Zone 확인
+  # firewall-cmd  --get-default-zone
+
+Zone에 interface 추가
+  # firewall-cmd  --add-interface=NIC  --zone=ZONE
+
+Zone에 interface 변경
+  # firewall-cmd  --change-interface=NIC  --zone=ZONE
+
+Zone에서 interface 제거
+  # firewall-cmd  --remove-interface=NIC  --zone=ZONE
+
+Zone에 Source Address RULE 추가
+1) 단일 호스트 추가
+  # firewall-cmd  --add-source=X.X.X.X --zone=ZONE
+
+2) 네트워크 대역 추가
+  # firewall-cmd  --add-source=X.X.X.X/24  --zone=ZONE
+
+Zone에 Source Address RULE 제거
+  # firewall-cmd  --remove-source=X.X.X.X 
+
+
+방화벽에서 서비스 허용
+  # firewall-cmd  --add-service=SERVICE  --zone=ZONE
+
+방화벽에서 서비스 허용 해제
+  # firewall-cmd  --remove-service=SERVICE  --zone=ZONE
+
+방화벽에서 포트 허용
+  # firewall-cmd  --add-port=PORT_NUM/PROTO  --zone=ZONE
+
+방화벽에서 포트 허용 해제
+  # firewall-cmd  --remove-port=PORT_NUM/PROTO  --zone=ZONE
+
+
+-----
+Ch15. SELinux
+
+Access Control :  접근 제어
+
+Subject :  Resource에 접근하는 대상(사용자, 프로세스)
+Object  :  Subject가 접근하는 Resource(파일, 포트, 시스템 자원 등)
+
+DAC(Discretionary Access Control) - 임의적 접근제어
+ - Subject가 임의로 자신이 소유한 Object에 대한 권한을 관리하는 접근제어 모델
+
+MAC(Mandatory Access Contol) - 강제적 접근제어
+ - Subject가 Object에 접근할 때 권한과 보안레이블을 같이 검증하여 접근을 제어하는 접근제어 모델
+
+RBAC(Role Based Access Control) - 역할 기반 접근제어
+ - Role에 기반하여 접근제어를 수행함.
+
+
+SELinux
+ - 동작 모드
+    - Enforcing : SELinux가 동작중인 상태로 SELinux의 보안정책을 강제하는 모드
+    - Permissive : SELinux가 동작하지만 SELinux의 보안정책을 강제하지 않는(허용) 모드
+    - Disabled : SELinux가 동작하지 않는 상태
+
+SELinux 현재 동작 모드 확인
+ # getenforce
+
+SELinux 동작모드 설정
+ # setenforce   SELINUX_MODE
+     Enforcing   : 1
+     Permissive  : 0
+
+
+SELinux 보안 컨텍스트
+
+SELINUX_USER:SELINUX_ROLE:SELIUX_TYPE_CONTEXT:LEVEL
+
+SELINUX_USER
+  - 실제 사용자가 아닌 SELINUX 사용자
+  - SELinux의 정책에 의해 각 사용자에 연결됨
+
+SELINUX_ROLE
+  - SELINUX 역할로 SELINUX_USER와 도메인을 연결하기 위한 항목
+
+TYPE_CONTEXT
+  - Subject가 Object에 접근할 때 컨텍스트를 비교하기 위하여 사용하는 항목
+
+LEVEL(민감도)
+  - 민감도를 의미하며 SELinux가 MLS로 동작하는 경우 사용함
+
+
+SELinux 보안 컨텍스트 변경(임시)
+ # chcon  [option]  [SELINUX_CONTEXT]  FILE
+
+ # chcon  -t  'httpd_sys_content_t'  FILE
+
+
+SELinux 보안 컨텍스트 변경(영구)
+ # semanage  fcontext  -a  -t  TYPE_CONTEXT  FILE_PATH
+
+SELinux 보안 컨텍스트 복원
+ # restorecon  [option]  FILE
+
+
+
+
+
+
