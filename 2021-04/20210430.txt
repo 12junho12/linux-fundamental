@@ -1,0 +1,201 @@
+﻿Ch14. firewalld 
+
+firewalld 
+
+방화벽
+  - 비 인가된 접근을 차단하는 장비/소프트웨어
+  - 네트워크 상에서 들어오는 요청에 대해 인가되지 않은 접근 시도를 차단함.
+  - 방화벽은 네트워크 자체를 보호하는 방화벽, 호스트를 보호하는 방화벽으로 구분해볼 수 있음.
+  
+
+Predefined Zones
+ block  :  모든 패킷을 거부
+             단, 내부에서 외부로 리턴하는 것은 허용
+ dmz    :  내부로 들어오는 패킷 거부
+              외부로 연결, ssh 서비스는 허용
+ drop   :  내부로 들어오는 모든 패킷을 폐기
+              외부로의 연결만 허용
+ external : 내부로 들어오는 패킷을 거부
+               외부로 연결, ssh 서비스는 허용
+ home : 내부로 들어오는 패킷 거부
+            dhcpv6-client, ipp-client, mdns, samba-client, ssh 허용
+ internal :  내부로 들어오는 패킷 거부
+            dhcpv6-client, ipp-client, mdns, samba-client, ssh 허용
+ public : Default Zone
+            모든 네트워크 카드가 등록됨
+            ssh, dhcpv6-client 허용
+ trusted : 모든 패킷을 허용
+ work    : 내부로 들어오는 패킷 거부
+              dhcpv6-client, ipp-client, ssh 허용
+
+
+방화벽 서비스 상태 확인
+ # firewall-cmd   --state
+
+방화벽 Predefined Zone 확인
+ # firewall-cmd   --get-zones
+
+방화벽 Predefined Service 확인
+ # firewall-cmd   --get-services
+
+방화벽 active zone 확인
+ # firewall-cmd   --get-active-zones
+
+방화벽 default zone 확인
+ # firewall-cmd   --get-default-zone
+
+Zone에 interface 추가
+ # firewall-cmd   --add-interface=NIC  --zone=ZONE
+
+Zone에 interface 변경
+ # firewall-cmd   --change-interface=NIC  --zone=ZONE
+
+Zone에서 interface 제거
+ # firewall-cmd   --remove-interface=NIC  --zone=ZONE
+
+
+Zone에 Source Address RULE 추가
+1) 네트워크 주소 추가
+ # firewall-cmd   --add-source=X.X.X.X/24  --zone=ZONE
+
+2) 특정 호스트 주소 추가
+ # firewall-cmd   --add-source=X.X.X.X  --zone=ZONE
+
+Zone에서 Source Address RULE 제거
+ # firewall-cmd   --remove-source=X.X.X.X  --zone=ZONE
+
+방화벽에서 특정 서비스 허용
+ # firewall-cmd   --add-service=SERVICE  --zone=ZONE
+
+방화벽에서 특정 서비스 허용 해제
+ # firewall-cmd   --remove-service=SERVICE  --zone=ZONE
+
+방화벽에서 특정 포트 허용
+ # firewall-cmd   --add-port=PORTNUM/PROTO  --zone=ZONE
+
+방화벽에서 특정 포트 허용해제
+ # firewall-cmd   --remove-port=PORTNUM/PROTO  --zone=ZONE
+
+-----
+Ch15. SELinux
+
+SELinux
+  - 리눅스의 커널 보안 모듈
+
+Access Contol
+  - 접근 제어
+
+주체(Subject) : Resource(Object)에 접근하는 대상(user, process)
+객체(Object) : 주체(Subject)가 접근하는 Resource(File, Port, System Resources, ...)
+
+DAC(Discretionary Access Contol) - 임의적 접근제어
+ - 주체가 자신 소유한 Object에 대해 권한을 임의로 관리하는 접근제어 모델
+
+MAC(Mandatory Access Control) - 강제적 접근제어
+ - 주체가 객체에 접근 시 권한과 보안레이블을 같이 검증하여 접근을 제어하는 접근제어 모델
+ 
+SELinux
+ - 동작 모드
+    - Enforcing : SELinux가 동작중이며 SELinux 보안정책을 강제하는 모드
+    - Permissive : SELinux가 동작중이나 SELinux 보안정책을 강제하지 않는 허용 모드
+    - Disabled : SELinux가 동작하지 않는 모드/상태
+
+현재 동작모드 확인
+ # getenforce
+
+현재 동작모드 설정
+ # setenforce   MODE
+
+SELinux 동작 Type
+ targeted - 대부분의 프로세스를 보호하는 동작 방식
+ minimum - 최소한의 프로세스를 보하는 동작 방식
+ mls - 기존 targeted에 민감도를 추가로 검증하여 targeted보다 엄격하게 보호하는 동작 방식
+
+ - 보안 컨텍스트
+   SELINUX_사용자:SELINUX_역할:SELINUX_유형:민감도
+
+  SELINUX_사용자 : 실제 사용자가 아닌 SELINUX의 보안 정책을 사용자에게 연결함
+  SELINUX_역할 : SELINUX 역할로서 SELINUX_사용자와 도메인을 연결하기 위한 항목
+  SELINUX_유형 : Subject가 Object에 접근시 컨텍스트 검증시 확인하는 항목
+  민감도 : MLS 동작시 사용됨.
+
+SELinux 보안 컨텍스트 설정(임시)
+ # chcon  [option]   SELINUX_CONTEXT   FILE
+ # chcon  -t  'user_tmp_t'  FILE
+
+SELinux 보안 컨텍스트 설정(영구)
+ # semanage fcontext  -a  -t  'TYPE_CONTEXT'  FILE_PATH
+ # semanage fcontext  -a  -t  'TYPE_CONTEXT'  '/tmp/testfile'
+ # semanage fcontext  -a  -t  'TYPE_CONTEXT'  '/tmp/testdir(/.*)?'
+
+ # restorecon  [option]   FILE_PATH
+ # restorecon  -v  FILE
+ # restorecon  -Rv  DIRECTORY
+
+
+ - 부울
+    - 주체가 객체에 대해 어떤 동작을 수행할 수 있는지 여부를 결정하는 보안정책
+    - 부울은 on, off 값을 가질 수 있다.
+
+현재 runtime 부울 값 확인(전체)
+  # getsebool  -a 
+
+현재 runtime 부울 값 확인(지정)
+  # getsebool  BOOL_NAME
+
+runtime 부울, 영구 bool 값 모두 확인
+  # semanage  boolean  -l
+
+runtime 부울 값 설정
+  # setsebool   BOOL_NAME  VALUE
+
+영구 부울 값 설정
+  # setsebool  -P  BOOL_NAME  VALUE
+
+
+SELinux 문제 해결 방법
+  로그 확인(syslog, Journal Log, Audit Log)
+  SELinux MODE Permissive로 전환 후 증상 해결 여부 확인
+  
+------
+Ch01. DNS 서비스
+
+DNS(Domain Name System)
+  - 어떤 의미를 포함하는 단어로 이뤄진 주소체계
+  - 도메인이 루트 도메인부터 계층적으로 구성되어있음
+  - DNS 서버에게 Domain name에 대한 정보를 요청하고 응답 받음
+
+DNS 서버 종류
+ - 마스터 서버 : 도메인을 관리할 권한이 있는 서버
+ - 슬레이브 서버 : 마스터 서버의 부하를 분산하기 위한 보조서버
+ - 캐싱 네임 서버 : 도메인을 직접 관리하는 서버가 아닌 도메인을 관리하는 DNS 서버로부터 DNS 정보를 받아 대신 응답하는 서버
+
+Domain 쿼리 영역
+ - 정방향 영역 : 도메인 주소에 대한 IP주소를 관리하는 영역
+ - 역방향 영역 : IP주소에 대한 도메인 주소를 관리하는 영역
+
+DNS 쿼리의 종류
+ - Resursive Query : 도메인 주소에 대해 일반적으로 요청하는 쿼리
+ - Iterative Query : 도메인 주소에 대해 정보를 알아내기 위하여 루트 도메인 네임 서버부터 반복적으로 수행하는 쿼리
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
