@@ -1,0 +1,20 @@
+ipa 서버
+
+서버구성
+
+패키지 설치 (ipa-server, ipa-server-dns)
+ip주소, /etc/hosts 호스트네임 설정
+ipa-server-install --setup-dns
+방화벽구성
+freeipa-ldap
+freeipa-ldaps
+dns
+ntp
+
+
+클라이언트
+
+패키지 설치(ipa-client)
+ip주소, 호스트네임 , DNS주소(서버껄로) 
+ipa-client-install --mkhomedir
+
