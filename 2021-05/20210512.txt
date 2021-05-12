@@ -1,0 +1,118 @@
+﻿Ch02. 네트워크 통신
+
+통신 방식
+ - Unicast - 1:1
+ - Broadcast - 1:All
+ - Multicast - 1:N
+
+통신 방식(방향)
+ - Simplex(단방향)
+ - Duplex(양방향)
+   - Full Duplex(전이중)
+   - Half Duplex(반이중)
+
+통신 방식(동기화 여부)
+ - Synchronous
+
+ - Asynchronous
+
+
+통신 방식
+ - Serial(직렬)
+
+ - Parallel(병렬)
+
+
+오류
+ - Single bit Error
+     전송 데이터 중 한 비트만 에러가 발생하는 경우
+ - Multiple bit Error
+     연속되지 않은 두개 이상의 비트에 에러가 발생하는 경우
+ - Burst Error
+     연속되는 두개 이상의 비트에 에러가 발생하는 경우
+
+
+오류 검출 방식
+Parity bit Check
+ - 짝수 패리티(Even Parity)
+ - 홀수 패리티(Odd Parity)
+
+
+Block Sum Check
+
+CRC Check
+
+
+Media Access Control
+
+CSMA/CD(Carrier Sense Multiple Access/Collision Detection)
+
+Token Ring
+
+Token Bus
+
+
+
+Circuit Switching
+ 통신하는 두 노드가 물리적 회선으로 연결되어 통신하는 방식
+ 회선을 물리적으로 연결하는데 시간이 필요함
+ 회선을 전용선처럼 사용해서 많은 데이터를 전송할 수 있음
+ 데이터 전송이 없는 경우에도 회선은 계속해서 독점적으로 사용되기 때문에 회선 낭비가 발생할 수 있음
+
+
+Message Switching
+ Circuit Switching 방식과 달리 물리적 회선을 설정하지 않고 메시지만 전달하는 방식
+ 메시지 데이터를 메시지 단위로 저장하고 전송하는 방식
+ 메시지 전달 경로가 고정적 경로가 아닌 네트워크 상황에 따라 다양한 경로로 전달될 수 있음
+
+
+Packet Switching
+ 메시지를 패킷단위로 분할한 후 패킷 단위로 전송하는 방식
+ 패킷을 전달하는 경로는 네트워크 상황에 따라 매번 다름
+ 
+
+-------
+Ch03. 네트워크 모델
+
+OSI Reference Model
+ - ISO에서 제정한 네트워크 표준 모델로 제조사에 관계없이 모든 장비들이 서로 데이터를 교환할 수 있는 네트워크를 구성하기 위한 참조 모델
+ - OSI Reference Model에서는 각 계층(Layer)을 두고 각 계층에서 네트워크의 복잡한 기능을 처리하도록 함
+
+물리계층(Physical Layer)
+ - 데이터를 신호(Signal)로 처리하며 신호를 물리적으로 전송하기 위해 필요한 전송매체의 물리적 특성, 전기적 특성, 절차 등을 정의하는 계층
+ - 전송매체(케이블), 허브가 물리계층에 해당함
+
+데이터링크 계층(Data-Link Layer)
+ - 프레임을 인접 노드(Intermediate Node)로 전달하는 역할을 수행하는 계층
+ - 물리 주소를 사용하여 대상호스트에 데이터를 전달함
+ - 스위치, Ethernet, 물리주소(Physical Address)
+
+네트워크 계층(Network Layer)
+ - 종단 노드 간의 메시지 전달을 담당하는 계층
+ - 논리주소(IP Address)를 사용하여 종단 노드간 통신을 수행함
+ - 논리주소 지정, 목적지에 대한 경로(route) 결정 등을 수행함
+ - 라우터, IP 프로토콜
+
+전송 계층(Transport Layer)
+ - 네트워크에서 전송되는 데이터의 전송방식, 절차 등을 규정하는 계층
+ - 전송 메시지의 전달(Delivery)을 책임지며 논리주소(Port)를 사용하여 하나의 호스트 내에서 구동되는 여러 프로세스 중 대상 프로세스로 메시지를 전달함
+ - 데이터의 종류에 따라 신뢰성 있는 데이터 전송, 빠른 데이터 전송 등을 지원함
+ - 방화벽(Firewall), TCP, UDP
+
+세션 계층(Session Layer)
+ - 네트워크를 통해 두 호스트 간의 데이터 전송이 가능한 접속 상태인 세션을 수립, 유지, 종료 등 세션 관리를 담당하는 계층
+
+
+표현 계층(Presentation Layer)
+ - 데이터 전송시 데이터의 표현방식(데이터 포맷 등)을 결정하는 계층
+ - 데이터의 포맷, 인코딩, 압축, 암호화 등을 정의함
+
+
+응용 계층(Application Layer)
+ - OSI Reference Model의 최상위 계층으로서 사용자가 실제 네트워크를 사용하기 위해 어플리케이션을 구동하는 계층
+ - 어플리케이션을 총해 사용자의 입력 데이터를 받아 상호작용을 하는 계층
+
+
+
+
+
