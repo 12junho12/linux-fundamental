@@ -1,0 +1,144 @@
+﻿Ch03. 네트워크 모델
+
+OSI Reference Model
+
+L1: 물리 계층(Physical Layer)
+ - 데이터를 신호로 처리하고 신호를 물리적으로 전송하기 위해 필요한 명세(전송매체의 물리적 특성, 전기적 특성, 절차 등) 정의하는 계층
+ - 전송매체(유선, 무선), 허브(Dummy Hub)
+
+L2: 데이터링크 계층(Data-Link Layer)
+ - 데이터를 프레임이라는 논리적 단위로 처리하며 프레임을 인접 노드까지 전달(Delivery)하는 역할을 수행하는 계층
+ - 프레임을 해석할 수 있으며 물리주소를 사용하여 인접 노드에 데이터를 전달함
+ - 스위치(Switch), 브리지(Bridge), Ethernet, 물리주소
+
+L3: 네트워크 계층(Network Layer)
+ - 데이터를 패킷이라는 단위로 처리하며 패킷을 출발지(Source)에서 목적지(Destination)까지 안전하게 전달하는 계층
+ - 논리주소(IP 주소)를 사용해서 End Nodes 간의 통신을 수행함
+ - 논리주소의 지정, 출발지에서 목적지까지 도달하는 경로(route) 결정하는 역할을 수행
+ - 라우터(Router), IP 주소
+
+L4: 전송 계층(Transport Layer)
+ - 데이터의 전송 방식을 결정하여 신뢰성 있는 데이터의 전송을 책임지는 계층
+ - 프로세스와 프로세스 간의 메시지 전달을 책임지는 계층
+ - 논리주소(Port 번호)를 사용하여 대상 프로세스/서비스들을 구분함
+ - 방화벽(Firewall), TCP, UDP
+
+
+L5: 세션 계층(Session Layer)
+ - 네트워크의 논리적인 연결인 세션(Session)을 관리하는 계층
+ - 세션 수립, 세션 유지, 세션 종료 등을 관리함
+
+
+L6: 표현 계층(Presentation Layer)
+ - 데이터의 표현 방식(데이터의 포맷 등)을 정의하는 계층
+ - 데이터 포맷, 데이터 인코딩 방식, 데이터 압축, 데이터 암호화 등의 기능을 지원
+
+
+L7: 응용 계층(Application Layer)
+ - 사용자가 네트워크를 사용하기 위해 직접 상호작용하는 계층으로 어플리케이션, 어플리케이션 프로토콜 등이 구동이 되는 계층
+ - 사용자가 제공한 어플리케이션의 데이터를 직접 다루는 계층
+
+
+TCP/IP Protocol Suite
+
+ - Network Interface Layer : 인접 노드간의 데이터 전송 지원
+   (=Network Access Layer)
+
+ - Internet Layer : 출발지(Source)부터 목적지(Destination)까지 패킷 전달
+
+ - Transport Layer : 데이터 전송방식을 결정하는 계층
+
+ - Application Layer : 어플리케이션 프로토콜의 동작을 지원하는 계층
+
+
+TCP/IP Suite
+
+
+Encapsulation/Decapsulation
+
+
+----
+Ch04. 프로토콜
+
+Ethernet
+
+Preamble : 데이터 전송을 알리는 시그널(7 Bytes)
+SFD(Start Frame Delimiter) : Frame의 시작을 알리는 필드 (1 Byte)
+Destination : 목적지 물리주소(MAC)
+Source : 출발지 물리주소(MAC)
+Type*/Length : Ethernet 프로토콜 상위에서 동작하는 프로토콜
+FCS(Frame Check Sequence) : 프레임의 오류 검출을 위한 필드
+
+     7 Bytes        1 Byte        6B    6B    2B                 4B
+[   Preamble   ][SFD(SOF)][ [ Dst | Src | Type  ] [Data] [FCS] ]
+ 10101010 * 7   10101011
+
+ARP(Address Resolution Protocol)
+ - 논리주소(IP 주소)로 물리주소(MAC)를 알아내는 프로토콜
+ - Request, Response 메시지로 구성됨
+
+IP(Internet Protocol)
+ - 네트워크 계층의 프로토콜로 패킷을 목적지까지 전달하기위한 프로토콜
+ - 논리 주소 지정을 지원함
+ - 비연결형 프로토콜(Connectionless Protocol)로 종단 노드끼리 계속해서 연결을 유지하지 않음
+ - 비연결형 프로토콜이므로 데이터가 목적지 노드에 전달되는 것을 최선을 다해 처리하지만(Best Effort) 반드시 보장하지는 않는다.
+ - 데이터에 오류 발생시 오류를 처리하는 기능이 없으며 비신뢰적 프로토콜이라고도 함
+
+IP 주소
+ - 32bit 구성되어있으며 4개의 옥텟으로 구분됨.
+ - Net-ID(Network 주소) + Host-ID(Host 주소) = IP주소
+ - A, B, C 클래스를 사용하여 호스트에 IP 주소를 부여함
+
+===
+Class A
+ - 첫번째 옥텟이 1 ~ 127인 네트워크
+ - Network ID를 8bit, Host ID를 24bit 사용하는 네트워크
+ - 기본 서브넷 마스크는 255.0.0.0 
+ - A 클래스 네트워크 당 2^24 -2개의 IP 주소 할당 가능함
+ - A 클래스를 할당 받는 대상은 국가단위, 대기업, ISP 등에 할당됨
+
+
+Class B
+ - 첫번째 옥텟이 128 ~ 191인 네트워크
+ - Network ID를 16bit, Host ID를 16bit 사용하는 네트워크
+ - B 클래스 네트워크 당 2^16 -2개의 IP 주소 할당 가능함
+
+Class C
+ - 첫번째 옥텟이 192 ~ 223인 네트워크
+ - Network ID를 24bit, Host ID를 8bit 사용하는 네트워크
+ - C 클래스 네트워크 당 2^8 -2개의 IP 주소 할당 가능함
+===
+
+Class D
+ - 첫번째 옥텟이 224 ~ 239인 네트워크
+ - 호스트에 할당하기 위한 IP 주소가 아닌 Multicast 용도로 사용되는 네트워크
+
+Class E
+ - 첫번째 옥텟이 240 ~ 255인 네트워크
+ - 연구용으로 예약된 네트워크이고 공인 네트워크에서 사용되지 않음
+ - 첫번째 옥텟이 255인 경우는 특수한 용도로 사용됨(Broadcast)
+
+
+Classful : IP 네트워크의 주소를 Class 단위로 관리하는 것
+Classless : IP 네트워크의 주소를 Class 단위로 관리하지 않는 것(Subnetting)
+
+IP 프로토콜 구조
+
+ - Version : 4bit 길이의 필드로 Internet Protocol 버전
+ - IHL : 4bit 길이의 필드로 IP의 헤더의 길이
+ - TOS(Type Of Service) : 1Byte 길이의 필드로 서비스 종류를 나타냄(우선순위 등)
+ - Total Length : 2Bytes 길이의 필드로 IP 헤더, 데이터 포함 IP 패킷의 전체 길이
+ - Identification : 2Bytes 길이의 필드로 IP 패킷을 구분하기 위한 ID 값
+ - IP Flags
+   - x : 예약된 비트(사용X)
+   - DF(Don't Fragment) : IP 패킷의 단편화 여부 지정 플래그로 1인 경우 IP 패킷 단편화 불가, 0인 경우 IP 패킷 단편화 가능
+   - MF(More Fragment) : IP 패킷의 단편 조각이 더 있는지 여부 지정 플래그로 1인 경우 단편 조각이 더 있고, 0인 경우에는 단편 조각이 없음(마지막 단편 조각)
+ - Fragmentation Offset : 13bit 길이의 필드로 IP 패킷이 단편화 된 경우 원래 데이터의 어느 위치의 데이터인지를 나타내는 필드
+ - TTL(Time to Live) : 1Byte 길이의 필드로 IP 패킷의 수명을 나타내며 네트워크를 하나 지날 때 마다 1씩 감소
+                              만약 0이 되면 IP 패킷은 소멸함
+ - Protocol : 1Byte 길이의 필드로 IP 프로토콜 상위 계층에서 동작할 프로토콜을 지정하는 필드
+ - Header Checksum : 2Bytes 길이의 필드로 IP 패킷 헤더의 오류 발생 여부를 체크하기 위한 필드
+ - Source Address : 4Bytes 길이의 필드로 출발지 IP 주소
+ - Destination Address : 4Bytes 길이의 필드로 목적지 IP 주소
+ - Options : 가변길이의 필드로 추가적으로 구성할 내용을 기재함
+ - Padding : Option 길이에 따른 나머지 길이를 맞추는 필드
