@@ -1,0 +1,161 @@
+﻿Ch04. 프로토콜
+
+Ethernet
+
+ARP(Address Resolution Protocol)
+
+
+IP
+
+
+
+IP 주소
+ - 32bit(4Bytes)로 구성되어 있으며 십진수로 표현함
+ - IPv4 주소의 부분은 4개의 Octet으로 구성되어있고 각 Octet 표현 범위는 00000000(0) ~ 11111111(255) 까지임
+ - A, B, C 클래스로 각 호스트들에 IP주소를 할당함
+
+Class A
+ - 첫번째 Octet이 1 ~ 127인 네트워크
+ - 1.0.0.0 ~ 127.255.255.255
+ - Default 서브넷 마스크는 255.0.0.0
+ - A 클래스의 네트워크 당 IP 주소 갯수는 2^24
+ - A 클래스의 네트워크 당 호스트에 할당가능한 IP 주소의 갯수는 2^24 -2
+
+
+Class B
+ - 첫번쨰 Octet이 128 ~ 191인 네트워크
+ - 128.0.0.0 ~ 191.255.255.255
+ - Default 서브넷 마스크 255.255.0.0
+ - B 클래스 당 IP 주소 갯수 2^16
+ - B 클래스 당 호스트에 할당가능한 IP 주소의 갯수는 2^16 -2
+
+
+Class C
+ - 첫번째 옥텟이 192 ~ 223인 네트워크
+ - 192.0.0.0 ~ 223.255.255.255
+ - Default 서브넷 마스크 255.255.255.0
+ - C 클래스 당 IP 주소 갯수 2^8
+ - C 클래스 당 호스트에 할당가능한 IP 주소의 갯수는 2^8 -2 = 254개
+
+
+Class D
+ - 첫번째 Octet이 224 ~ 239인 네트워크
+ - 호스트 할당 용도가 아닌 Multicast 용도로 사용됨
+
+Class E
+ - 첫번째 Octet이 240 ~ 255인 네트워크
+ - 호스트 할당 용도가 아닌 연구용 (공인 네트워크에서 라우팅 되지 않음)
+
+
+Classful : IP 주소를 클래스 단위로 관리하는 방식
+Classless : IP 주소를 클래스 단위로 관리하지 않는 방식
+
+
+IP Header 구조
+Version : 4bit 필드로 구성. 버전 정보를 나타냄
+IHL(Header Len) : 4bit 필드로 구성. IP 헤더의 길이(Word 단위(4Bytes), 기본값 5)
+TOS : 8bit 필드로 구성. Type Of Service (QoS)
+Total Length : 16bit필드로 구성. IP 패킷의 전체 길이(Header+Data)
+Identification : 16 bit 필드로 구성. IP 패킷의 고유 ID
+IP Flags
+ - DF(Don't Fragmentation) : IP 패킷의 단편화 여부 결정 플래그로 플래그가 0인 경우 단편화 가능, 1인 경우 단편화 불가
+ - MF(More Fragmentation) : IP 패킷의 단편화 조각이 더 있는 경우 1, 그렇지 않은 경우(마지막 단편화 조각인 경우) 0으로 플래그 설정
+
+Fragment Offset : 13bit 필드로 구성. IP 패킷 단편화시 원본 데이터의 어느 부분인지를 기록하는 필드
+TTL : 8bit 필드로 구성. IP 패킷의 수명
+Protocol : 8bit 필드로 구성. IP 프로토콜의 상위 프로토콜 기재
+Header Checksum : 16bit 필드로 구성. IP 프로토콜 헤더의 오류 체크를 위한 필드
+Source Address : 출발지 IP 주소
+Destination Address : 목적지 IP 주소
+Options : IP 프로토콜의 옵션 지정(Variable Length)
+Padding
+
+
+ICMP(Internet Control Messsage Protocol)
+ - IP 프로토콜이 비 신뢰적 프로토콜(에러 처리 기능 부재) IP 프로토콜을 보조하기 위한 프로토콜
+ - Error 처리, 정보 제공을 지원하는 프로토콜
+
+Type : 8bit 길이의 필드로 ICMP 메시지의 종류를 나타냄
+Code : 8bit 길이의 필드로 ICMP 메시지의 종류 내에서의 세부상태
+Checksum : 16bit 길이의 필드로 오류 체크를 위한 필드
+
+
+TCP(Transmission Control Protoccol)
+ - 전송프로토콜로 신뢰성 있는 데이터 전송을 지원하는 프로토콜
+ - Connection-Oriented Protocol로 데이터 전송 전에 연결을 수립함
+ - 데이터 전송 중 오류 발생 시 오류 처리 기능을 가지고 있음
+ - Sequence Number, Acknowledge Number를 가지고 데이터의 전송을 동기화함
+
+
+TCP 프로토콜 구조
+Source Port : 2Bytes 필드의 길이로 출발지(Source)의 출발지 포트
+Destination Port : 2Bytes 필드의 길이로 목적지(Destination)의 목적지 포트
+Sequence Number : 4Bytes 필드의 길이로 보내고자하는 전송 데이터의 순서를 나타내는 번호
+Acknowledge Number : 4Bytes 필드의 길이로 상대방에게서 수신한 데이터의 응답에 사용하는 번호
+                                 다음에 내가 수신할 데이터의 순서 번호를 나타냄
+Offset : 4bit 길이의 필드로 TCP 헤더의 길이를 나타냄
+Reserved : 4bit 길이로 현재 사용되지 않는 부분
+TCP Control Flags : 8bit 길이의 필드. TCP 상태를 관리하기 위한 플래그의 모임
+  URG(Urgent) : TCP 데이터 중 긴급 데이터(Urgent Data)가 존재하는 경우 사용하는 플래그
+  ACK : 수신 데이터에 대한 응답을 할 때 사용하는 플래그
+  PSH(Push) : 데이터를 전송할 때 사용하는 플래그
+  RST(Reset) : TCP 연결을 강제로 종료하거나 리셋할 때 사용하는 플래그
+  SYN(Synchronize) : TCP 세션 연결시 데이터 전송을 동기화하기위한 플래그
+  FIN(Finish) : TCP 연결을 종료할 때 사용하는 플래그
+
+Window : 16bit 길이의 필드로 수신 데이터의 사이즈를 나타냄
+Checksum : 16bit 길이의 필드로 TCP 전체 데이터(TCP 헤더+데이터)의 오류를 검증하기 위한 필드
+Urgent Pointer : TCP의 Urgent Flag 설정시 사용되는 필드로 Urgent Data의 끝나는 위치를 가리킴
+TCP Options : 부가적으로 사용하는 옵션값이 저장되는 필드(Variable Length)
+
+
+
+UDP(User Datagram Protocol)
+ - Connectionless Protocol
+ - 비신뢰적 데이터 전송을 지원하는 전송 프로토콜
+ - TCP에 비해 프로토콜의 구조가 단순하며 빠른 데이터 전송을 위한 프로토콜
+
+
+UDP 프로토콜 구조
+
+Source Port : 16bit 필드 길이로 출발지(Source)의 포트
+Destination Port : 16bit 필드 길이로 목적지(Destination)의 포트
+Length : 16bit 필드 길이로 UDP 패킷의 길이
+Checksum : 오류를 검출하기 위한 필드
+
+-----
+
+wireshark
+
+yum install wireshark wireshark-gnume
+
+arp -a 
+arp -d 있는 ip 
+ping 10.0.2.12
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
