@@ -1,0 +1,91 @@
+﻿Ch04. 프로토콜
+
+TCP
+
+TCP 3-way Handshake
+ - TCP를 통한 데이터 전송 전 TCP 세션 연결을 수립하는 과정
+
+TCP 4-way Handshake
+ - TCP 세션 연결을 정상 종료하는 과정
+
+
+TCP 프로토콜 구조
+Source Port : 16bit 길이로 Source(출발지)에서 사용하는 포트 번호
+Destination Port : 16bit 길이로 Destination(목적지)에서 사용하는 포트 번호
+Sequence Number : 32bit 길이로 데이터 전송시 데이터의 순서를 가리킴
+Acknowledge Number : 32bit 길이로 데이터 수신시 수신 데이터의 응답을 보낼 때 사용하는 번호
+Offset : 4bit 길이로 TCP 헤더의 길이
+Reserved : 4bit 길이
+TCP Control Flags
+ - URG : Urgent Data가 있는 경우 1, 없는 경우 0
+ - ACK : 수신 데이터에 대한 응답을 보낼 때 사용하는 플래그
+ - PSH : 데이터 전송시 사용하는 플래그
+ - RST : 연결을 강제 종료하거나 리셋시 사용하는 플래그
+ - SYN : TCP 연결 동기화를 위해 사용하는 플래그
+ - FIN : TCP 연결을 정상 종료할 때 사용하는 플래그
+
+Window : 16bit 길이로 수신버퍼의 크기
+Checksum : 16bit 길이로 TCP 세그먼트의 전체 데이터(TCP 헤더+데이터) 오류 체크하기 위한 필드
+Urgent Pointer : 16bit 길이로 Urgent Data가 존재하는 경우 Urgent Data의 끝 부분을 가리키는 Pointer
+Options : TCP의 추가적인 설정을 하기위한 필드(Variable Length)
+
+
+UDP
+
+
+UDP 프로토콜 구조
+
+
+-------
+Ch01. Packet Tracer
+Packet Tracer
+ - Cisco Systems 사에서 개발한 네트워크 시뮬레이터
+
+
+Cisco IOS
+ - Cisco 네트워크 장비의 운영체제
+
+Cisco IOS Modes
+ - User Mode : 가장 처음 진입하는 모드로 극히 제한적인 모드로 다른 장비와 네트워크 연결 테스트 정도만 가능함
+ - Privileged Mode : 관리자 모드로 네트워크 장비의 상태나 설정 확인, 설정 저장 등을 할 수 있는 모드
+ - Global Configuration Mode : 네트워크 장비의 전역적 설정을 할 수 있는 모드(Hostname, Interface 등)
+ - Interface Mode : Ethernet, FastEthernet, Serial 등 인터페이스를 설정하는 모드
+ - Line Interface Mode : Console, VTY 등 Line Interface를 설정하는 모드
+
+
+
+Connection 전송매체 종류
+ - Straight-Through
+ - Crossover
+ - Rollover
+ - Serial DCE
+ - Serial DTE
+
+
+DCE(Data Communication Equipment)
+ - Serial 구간에서 Clock을 생성해주는 장비
+ - CSU/DSU/Modem
+
+DTE(Data Terminal Equipment)
+ - Serial 구간에서 관리하는 네트워크와 연결된 마지막 장비
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
