@@ -1,0 +1,142 @@
+﻿Ch04. Routing
+
+Router
+
+Routing
+ - Static Routing
+ - Dynamic Routing
+
+Routing 결정 요소
+ - 홉수(Hop Count) :거치는 라우터의 수
+ - 지연(Delay) : 목적지로 보내는 과정에서 요구하는 작업을 수행하기까지의 걸리는 시간
+ - 부하(Load) : 회선 사용량, 라우팅 처리에 필요한 CPU, RAM 사용량 등
+ - 신뢰도(Reliablity) : 전송매체의 신뢰 상태(전송 오류, 손실 등)
+ - 대역폭(Bandwidth) : 회선에서 처리 가능한 회선 용량
+
+
+Routing
+
+Static Routing
+
+Router(config)# ip route 네트워크주소 서브넷마스크 NEXT_HOP_IP
+Router(config)# ip route 네트워크주소 서브넷마스크 EXIT_INTERFACE
+                                                                     (자기 자신의 INTERFACE)
+
+Default Route
+
+경로 요약(Route Summarization)
+
+Router(config)# ip route 210.45.8.0 255.255.255.0 57.5.210.2
+Router(config)# ip route 210.45.9.0 255.255.255.0 57.5.210.2
+Router(config)# ip route 210.45.10.0 255.255.255.0 57.5.210.2
+Router(config)# ip route 210.45.11.0 255.255.255.0 57.5.210.2
+Router(config)# ip route 193.10.57.0 255.255.255.0 57.5.9.2
+
+
+210.45.0000 1000.0000 0000
+210.45.0000 1001.0000 0000
+210.45.0000 1010.0000 0000
+210.45.0000 1011.0000 0000
+
+210.45.000010 00.0000 0000
+ 210.45.8.0/22 255.255.253.0
+
+
+Supernetting
+ - 서브네팅의 반대 개념으로 연속된 주소범위를 가지는 네트워크 블록들을 하나의 네트워크로 묶어서 사용하는 IP 주소 관리 기법
+
+-----
+Ch05. Dynamic Routing
+
+Dynamic Routing
+ - Routing Protocol에 의해서 Routing 경로를 학습하고 Routing Table을 관리하는 Routing 방식
+
+자치 시스템(Autonomous System)
+ - 하나의 독립된 라우팅 정책을 가지는 라우터 네트워크의 모임
+ - ISP, 독립된 자체 네트워크를 구성하는 조직
+ - AS번호를 할당 받아 사용
+ - 우리나라의 경우 KRNIC에서 AS 번호를 할당 받아 사용함
+
+
+Routing
+ - IGP(Interior Gateway Protocol)
+   - AS 내에서 Routing을 수행하는 Routing Protocol
+     RIP, IGRP, EIGRP, OSPF, IS-IS
+
+ - EGP(Exterior Gateway Protocol)
+   - AS 간의 Routing을 수행하는 Routing Protocol
+     BGP(Border Gateway Protocol)
+
+Routing Protocol
+ - Distance Vector Routing Protocol
+   - Distance(Hop Count)와 Vector로 라우팅을 수행하는 라우팅 프로토콜
+   - Routing Table을 교환하여 라우팅 정보를 교환
+   - 업데이트 주기마다 라우팅 정보를 교환함
+   - 대표적인 라우팅 프로토콜 : RIP
+
+ - Link State Routing Protocol
+   - 링크 상태 정보를 교환하는 라우팅 프로토콜
+   - 링크 상태가 변할 때마다 링크 상태정보를 교환하여 라우팅 테이블을 구성
+   - 대표적인 라우팅 프로토콜 : OSPF
+
+ - Hybrid Routing Protocol
+   - Distance Vector와 Link State의 장점을 혼합하여 라우팅하는 라우팅 프로토콜
+   - 대표적인 라우팅 프로토콜 : EIGRP
+
+관리 거리(Administrative Distance)
+ - 복수의 라우팅 방식에 의해 라우팅 경로가 관리될 경우 어떤 라우팅 방식에 의해 계산된 라우팅 정보를 우선할 것인지에 대한 우선순위
+
+--------------------------------------------------------------------
+   Routing Source          Administrative Distance
+--------------------------------------------------------------------
+     Connected                            0
+     Static                                   1
+     EIGRP(Internal)                     90
+     IGRP                                  100
+     OSPF                                  110
+     RIP                                    120
+     EIGRP(External)                    170
+--------------------------------------------------------------------
+
+
+-----
+Ch06. RIP
+
+RIP
+ - Distance Vector Routing Protocol 중 하나
+ - 가장 오래된 라우팅 프로토콜
+ - 소규모의 네트워크에서 주로 사용함
+ - Hop Count를 매트릭으로 사용함
+ - 기본적으로 RIPv1 동작
+
+매트릭 : 라우팅에 소요되는 비용
+
+RIP 라우팅 설정 방법
+Router(config)# router rip
+Router(config-router)# network 네트워크_주소
+Router(config-router)# exit
+Router(config)# exit
+
+Router# show ip route
+
+
+RIPv1
+ - Classful 네트워크 지원
+
+RIPv2
+ - Classless 네트워크 지원
+
+
+RIPv2 동작 설정
+Router(config)# router rip
+Router(config-router)# version 2
+Router(config-router)# no auto-summary
+Router(config-router)# network 네트워크_주소
+Router(config-router)# exit
+Router(config)# exit
+
+Router# show ip route
+
+-----
+
+
