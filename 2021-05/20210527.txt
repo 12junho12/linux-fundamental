@@ -1,0 +1,131 @@
+﻿Distance Vector Routing Protocol의 Looping 방지를 위한 해결 방안
+ - Maximum Hop Count(Hop Count 16)
+ - Split Horizon : Network 정보가 들어온 Interface 쪽으로는 Routing Update를 보내지 않음
+ - Route Poisoning : Network에 장애가 발생한 경우 해당 네트워크를 Unreachable로 설정(Hop 16)하고 다른 라우터들에게 전파함
+ - Poison Reverse : Network가 Down 된 정보에 대해 받은 Interface에 다시 보냄
+ - Hold-down Timer : Network 장애 발생시 Routing Table에서 바로 지우지 않고 다른 라우터의 부정확한 라우팅 업데이트를 무시하는 방법
+ - Triggered Update : Network에 변화가 생겼을 때 그 사실을 다른 라우터에 즉시 업데이트를 하는 방법
+
+-------
+Ch07. EIGRP(Enhanced Interior Gateway Routing Protocol)
+
+EIGRP
+ - Hybrid Routing Protocol
+ - Cisco 자체 표준이어서 다른 Vendor의 Router에서는 사용이 불가함
+ - 빠른 수렴 시간을 가짐
+ - 효율적인 Bandwidth 사용 가능함
+ - DUAL(Diffusing Update Algorithm)을 사용하여 Successor와 Feasible Successor를 선정함
+ - 멀티캐스트를 사용하여 라우팅 정보를 교환한다.
+
+
+EIGRP 메트릭
+
+ Metric = [K1 * Bandwidth + (K2*Bandwidth)/(256-Load) + K3 * Delay] * 256
+ Metric = (Bandwidth + Delay) * 256
+
+Bandwidth(대역폭) : 10^7/가장_느린_Bandwidth
+Delay(지연) : 모든 경로의 Delay의_합/10
+Reliability(신뢰도)
+Load(인터페이스의 부하)
+MTU
+
+
+Default K 상수값
+K1 = 1, K2 = 0, K3 = 1, K4 = 0, K5 = 0
+K1 : Bandwidth, K2 : Load , K3 : Delay, K4 : Reliability, K5 : MTU
+
+
+DUAL Algorithm 관련 용어
+ - FD(Feasible Distance)
+   Source Router에서 Destination까지 계산한 EIGRP Metric
+
+ - AD(Advertised Distance)/RD(Reported Distance)
+   Source Router의 Next Hop에서 Destination까지 계산한 EIGRP Metric
+
+ - Successor
+   EIGRP에서 Destination까지 가기 위한 Best Route
+   FD 중에서 가장 낮은 경로 상의 Next Hop Router
+
+ - Feasible Successor
+   EIGRP에서 Destination까지 가기 위한 대체 경로
+   Successor가 동작하지 못할 때 Routing 경로 계산 없이 바로 Routing Table에 등록되는 경로
+
+
+EIGRP 패킷 종류
+
+
+
+Router ID
+ - 라우팅 영역 내에서 고유한 Router ID
+ - Loopback Interface에 설정된 IP주소
+ - Loopback Interface가 없으면  Router Interface의 IP 주소 중 가장 높은 주소를 Router ID로 선정함
+
+
+EIGRP 구성 방법
+Router(config)# router eigrp AS_NUM
+Router(config-router)# network 네트워크주소
+
+
+---------
+Ch08. OSPF(Open Shortest Path First)
+
+OSPF
+ - Link State Routing Protocol
+ - 링크 상태 정보를 기준으로 라우팅 정보를 교환
+ - Partial Update를 기본적으로 지원함
+ - 링크 상태가 변하면 변화한 링크 상태 정보를 다른 라우터에게 전달
+ - 업데이트 할 내용이 없을 경우에도 기본적으로 30분 간격으로 링크 상태 재생(Link State Refresh)를 이용하여 Update 정보를 교환함
+ - 표준 라우팅 프로토콜로 Vendor와 무관하게 사용이 가능함
+ - Routing Metric을 링크 Cost 값으로 사용함
+ - OSPF는 area를 사용하여 계층적 라우팅 구조를 가짐
+
+
+OSPF Network Topology
+ - Broadcast Multi-Access
+ - Point-to-Point
+ - NBMA(Non-Broadcast Multi-Access)
+
+OSPF 네이버 맺는 과정
+ Down State : OSPF Router가 neighbor를 맺기 이전 상태(어떤 정보도 교환하지 않은 상태)
+ Init State : OSPF Router가 처음 Hello Packet을 보내고 Init 상태로 바뀜
+ Two way State : 상대방 라우터가 보낸 Hello Packet에서 자신을 발견하면 Two way State로 진입함
+ Exstart State : 두 neighbor Router 간에 Master/Slave 관계를 수립하는 단계
+                     (OSPF Router 중 Router ID가 가장 높은 Router가 Master가 됨)
+ Exchange State : neighbor Router들끼리 DBD 패킷을 이용해 자신의 Link State 정보를 서로에게 전달함
+ Loading State : LSR(Link State Request)을 사용하여 자신에게 없는 Link 정보에 대해 세부 정보를 요청
+ Full Adjacency State : Loading State를 거쳐서 Link State 정보를 모두 주고 받은 상태
+
+
+OSPF Packet  종류
+ Hello : neighbor Router를 탐색하거나 Link의 이상유무를 탐지하기 위한 패킷
+           (10초)
+ DBD(DB Description) : OSPF Router의 Topology Database를 요약한 패킷
+ LSR(Link State Request) : 상대 Router가 보낸 DBD를 확인하고 자신에게 없는 트워크 정보를 요청하는 패킷
+ LSU(Link State Update) : LSR 패킷에 대한 응답이나 Link State가 변동된 경우 변동된 Link State를 알리기 위한 패킷
+ LSA(Link State Acknowledgement) : OSPF 패킷에 대해 정상 수신했다는 사실을 알리기 위한 패킷
+
+
+DR(Designated Router)
+ - Broadcast Multi-Acess 환경에서 DR, BDR Router가 선정됨.
+ - DR 선정 기준은 Priority, Router-ID를 비교하여 선정함.
+ - (1) Priority 값을 비교하여 높은 라우터를 선정 (2) Priority가 동일하다면 Router ID를 비교하여 Router ID가 높은 Router가 DR로 선정
+ - LSU를 주로 보내는 Router를 DR로 지정하여 Overhead를 감소하고자 하는 것이 목적
+
+BDR(Backup Designated Router)
+ - DR 다음으로 Router의 ID가 높은 Router가 선정됨
+ - DR에 문제가 발생한 경우 일반적으로 BDR이 차기 DR로 선정됨
+
+DR, BDR, DRother
+
+
+OSPF 구성 방법
+Router(config)# router ospf PROCESS_ID
+Router(config-router)# network 네트워크주소 WILDCARDMASK area AREA_ID
+
+
+
+
+
+
+
+
