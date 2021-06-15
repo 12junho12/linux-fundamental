@@ -1,0 +1,146 @@
+﻿Ch08. OSPF(Open Shortest Path First)
+
+OSPF
+ - Link State Routing Protocol
+ - Link State 변동시 Link State를 교환함
+ - area 단위로 라우팅 정보를 교환함
+ - 표준이므로 Vendor와 무관하게 사용할 수 있음
+ - 중 대형 네트워크에서 주로 사용
+ - Routing Metric을 Link Cost로 사용
+
+
+OSPF Network Topology
+ - Broadcast Multi-Access
+ - Point-to-Point
+ - NBMA(Non-Broadcast Multi-Access)
+
+
+
+OSPF 네이버 맺는 과정
+ Down State : OSPF로 정보를 교환하기 전 상태
+ Init State : OSPF Router가 처음으로 Hello Packet 전송한 상태
+ Two-way State : OSPF Router가 상대방 Router가 보낸 Hello Packet에서 자신의 정보 확인시 Two-way State로 진입
+ Exstart State : Router 간 Master/Slave 결정하는 단계
+ Exchange State : DBD Packet을 교환하는 단계
+ Loading State : LSR Packet을 전송하여 Link State 정보 요청
+ Full Adjacency State
+
+
+OSPF Packet  종류
+ Hello : neighbor를 발견하거나 neighbor의 상태를 주기적(10초)으로 체크하기 위한 패킷
+ DBD(DB Description) : OSPF Topology에 대한 요약 정보
+ LSR(Link State Request) : DBD에서 자신이 모르는 네트워크 정보가 있을 때 상세 정보 요청 해킷
+ LSU(Link State Update) : Link State 변동시나 LSR에 대한 응답에 사용되는 패킷
+ LSA(Link State Ack) : OSPF 패킷을 정상적으로 수신하였다는 응답 패킷
+
+OSPF Databases
+ Adjacency DB : 인접 라우터 정보
+ Topology DB : 네트워크 내의 모든 경로 정보
+                      Area 내의 모든 라우터는 동일한 Topology를 갖게됨
+ Forwarding DB : Topology DB 정보를 바탕으로 계산된 최적 경로의 모임
+
+
+Router ID 결정 과정
+ (1) Loopback Interface의 IP 주소
+ (2) 물리적 인터페이스의 IP 주소 중 가장 큰 IP 주소
+
+
+DR(Designated Router)
+ - DR 선정 기준은 (1) Priority, (2) Router ID
+
+BDR(Backup Designated Router)
+ - DR보다 후순위의 Router로 차기 DR이 될 Router
+
+
+DR, BDR, DRother
+
+
+OSPF 구성 방법
+Router(config)# router ospf PROCESS_ID
+Router(config-router)# network 네트워크주소 WILDCARDMASK area AREAID
+
+-----
+=========
+Switching
+
+Switch의 기본 동작
+ Learning : Frame의 Src Address를 통해 MAC Address를 학습함
+ Flooding : MAC Address Table에 MAC Address 정보가 없는 경우 나머지 모든 포트로 프레임을 복제하여 전송함
+ Forwarding : Destination MAC Address를 MAC Address Table에 등록된 Port 정보를 사용하여 해당 포트로 프레임을 전송함
+ Filtering : 프레임을 전달할 때 MAC Address에 해당하는 포트 외의 나머지 포트로 프레임을 전달하지 않음
+ Aging : 일정시간 동안 통신이 없는 MAC Address Table Entry를 삭제함
+
+
+Bridge ID(8 Bytes)
+ |[Priority(2Bytes)][MAC Address(6 Bytes)]|
+    32768 + 1
+      32769
+
+BPDU
+
+Root Bridge
+ - 하나의 네트워크에 하나만 존재하는 중심이 되는 브리지(스위치)
+ - Designated Port를 가짐
+ - Bridge ID가 가장 작은 브리지를 Root Bridge로 선정함
+
+Non-Root Bridge
+ - Root Bridge가 아닌 다른 브리지(스위치)
+ - Root Port를 가지게 됨
+
+Root Port
+ - Root Bridge로 가는 가장 최소의 Cost를 가지는 포트
+
+Root Port 선출
+  1. Root Bridge ID 값이 가장 작은 BPDU 수신한 Port
+  2. Path Cost가 가장 작은 Port
+  3. 인접 Switch의 Bridge ID가 가장 작은 Port
+  4. 인접 Swtich의 Port ID가 가장 작은 Port
+  5. 자신의 Port ID가 가장 작은 Port
+
+Designated Port 선출
+  1. Root Bridge의 각 Port
+  2. 낮은 Priority의 BPDU를 수신한 Port
+  3. Path Cost가 낮은 Switch의 Port
+  4. Bridge ID가 낮은 Switch의 Port
+  5. Port ID가 가장 낮은 Port
+
+
+Spanning-Tree Protocol
+  - Disabled : Port가 고장나거나 관리목적에 의해 사용하지 않는 상태
+  - Blocking(20 Sec) : Switch의 전원을 켜거나 Port를 활성화 시키는 경우의 포트의 최초 상태
+                             일반 데이터는 전송이 되지 않고 BPDU만 교환이 되는 상태
+  - Listening(15 Sec) : STP를 준비하는 단계로 STP Forwarding 상태로 변경하기 위한 준비 단계
+                   일반 데이터는 전송이 되지 않고 BPDU만 교환이 되는 상태
+  - Learning(15 Sec) : STP Forwarding 상태로 변경하기 위한 직전단계로 MAC Address를 학습하는 단계
+                             Frame을 정송하기 위한 준비 작업을 진행함
+  - Forwarding : 데이터 프레임을 전송할 수 있는 단계
+                      일단 데이터와 BPDU도 교환이 가능한 상태
+
+VLAN
+ - Router를 사용하지 않고 하나의 스위치를 논리적으로 쪼개어 여러개의 독립된 네트워크로 분할하는 기술
+ - 각각의 목적에 맞는 네트워크 운영이 가능함
+ - 각각의 네트워크에 대한 격리가 지원되므로 네트워크 보안성을 향상할 수 있음
+ - Switch의 기본 VLAN의 ID는 1번(VLAN 1)
+
+VLAN 사용 단계
+ 1. VLAN 생성
+ 2. VLAN에 Port 가입
+
+
+VLAN 생성
+ Switch(config)# vlan X
+ Switch(config-vlan)# name VLAN_설명
+ Switch(config-vlan)# exit
+
+VLAN 가입
+ Switch(config)# interface FastEthernet 0/X
+ Switch(config-if)# switchport access vlan X          <- VLAN 가입
+ Switch(config-if)# exit
+
+
+
+
+
+
+
+
