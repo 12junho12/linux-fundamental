@@ -1,0 +1,134 @@
+리눅스 복습 정리
+- 오픈 소스 (무료)
+- CentOS 는 서버 / Ubuntu 데스크탑
+
+파일관리
+$ ls	: 파일 정보 확인 ( -l, -i, -d, -R, -a )
+$ pwd / cd  : 현재 작업하는 디렉토리 위치 확인 / 이동
+$ cat / head / tail / more  : 파일의 내용을 확인할 때 사용
+$ grep / find  : 검색할 때 사용하는 명령어.
+$ mkdir / touch  : 디렉토리 / 파일을 생성할 때에 사용.(시간정보를 업데이트)
+$ rmdir / rm  : 디렉토리/파일 삭제 시 사용 ( rmdir 은 빈 디렉토리만 삭제 가능)
+$ cp / mv / ln  : 복사 / 이동 / 링크파일 생성 시 사용하는 명령어
+	파일이름	->  inodeA  ->  데이터블록
+	하드링크  -> inodeA  -> 데이터블록
+     소프트링크  ->  inodeB  -> 데이터블록(파일이름)  ->  inodeA  -> 데이터블록
+$ vi / vim / gedit  : 파일 내용을 편집할 수 있는 편집기들..
+	vim FILE  -> i 키 입력 -> esc 입력 -> : 키 입력 -> wq! 키들을 조합
+$ echo "hello world" >> fileA
+
+사용자관리
+/etc/passwd -> 사용자정보 확인
+/etc/group   -> 그룹정보 확인
+/etc/shadow -> 사용자 패스워드 정보 
+/etc/sudoers -> sudo 명령어 사용 설정 (wheel그룹)
+
+$ id	-> 사용자 정보 확인
+# useradd, userdel, usermod 	-> 사용자 생성 / 삭제 / 수정 
+# groupadd, groupdel, groupmod -> 그룹 생성 / 삭제 / 수정
+$ passwd # chage	-> 패스워드 설정 및 정책 설정
+$ su , sudo	-> 사용자 권한 상승을 위해 사용
+	su - root	=> root 사용자 패스워드 입력
+	sudo -i	=> 본인의 패스워드 입력 ( /etc/sudoers 에 등록된 사용자만 )
+
+권한 관리
+# ls -l / getfacl	-> 파일의 권한 확인
+# chmod / chown / setfacl	-> 파일의 권한 설정
+	chown  USER:GROUP  FILE
+
+디스크관리
+# fdisk / gdisk / parted	: 디스크 파티셔닝 도구
+	MBR / GPT
+	파티션 개수 및 디스크 크기 제한
+	부팅 영역 설정
+# lsblk  : 장치 확인
+# pvcreate / vgcreate / lvcreate : LVM 생성
+# pvremove / vgremove / lvremove : LVM 삭제 (생성의 역순)
+# vgextend / lvextend : LVM 확장
+# pvmove / vgreduce / lvreduce : LVM 축소 (pvmove 로 데이터 이동 후 제거)
+# pvdisplay / vgdisplay / lvdisplay : LVM 확인 ( lvscan , lvs 등도 가능 )
+# mkfs / mkswap	: 파일시스템 / 스왑 생성
+# blkid 	: 장치의 파일시스템 및 UUID 확인
+# mount / swapon	: 마운트 작업 및 스왑 활성화 ( /etc/fstab )
+# df / free / du : 파일시스템의 사용량 확인 / 메모리 / 디렉토리 / 
+# lsof  : 디렉토리에서 작업 중인 프로세스 확인
+
+프로세스 관리
+# kill / killall / pkill	: 프로세스 신호 전달(종료)
+# ps / top		: 프로세스 상태 확인
+# jobs / fg / bg	: 작업환경 확인 및 재실행 시 사용
+
+네트워크관리
+$ ip addr show / ifconfig	: IP 주소 확인
+$ ip route		: 게이트웨이 확인
+$ ping / traceroute 	: 연결 상태 확인
+$ ss / netstat	: 수신 대기 포트 확인
+$ nmcli 	: 네트워크 설정 및 확인
+	add / modify / delete
+	up / down
+	show
+-> /etc/sysconfig/network-scripts/ifcfg-XXX : 인터페이스 설정 정보
+-> /etc/resolv.conf	: DNS 주소 확인용
+$ hostnamectl (set-hostname)	: 호스트네임 설정 및 확인
+
+패키지 관리
+# yum / dnf / apt / rpm - 패키지 관리 도구
+	install / update / remove
+	list / info / search / provider
+# yum-config-manager
+# vim /etc/yum.repos.d/XXX.repo
+# yum repolist
+
+
+서비스 관리
+# systemctl / (service)
+# systemctl
+	status / is-active / is-enabled
+	list-units / list-unit-files
+	start / stop / restart
+	enable / disable
+	mask / unmask
+	
+	isolate / get-default / set-default
+
+
+방화벽 관리
+# firewall-cmd / firewall-config / ufw  : 방화벽 설정
+		Netfilter
+	
+	iptables		firewalld
+
+			firewall-cmd / firewall-config
+# firewall-cmd  --add-service
+	        --add-port
+	        --add-source   ...
+	        --add-rich-rule
+	--permant / --reload
+	man  -k  rich	/  mandb
+
+
+SELinux
+- 개념 : 리눅스 시스템을 좀 더 안전하게 사용하기 위한 방법(모듈)
+	파일 접근 : chmod / ACL 
+
+	사용자A	->   프로세스B   ->  FILE	(사용자 권한만 확인)
+					(프로세스까지 확인)
+	ls  -Z		: 파일 컨텍스트 확인
+	semanage fcontext	: 영구설정 값 변경 
+	restorecon	: 영구설정 값을 현재 값에 적용시킬 때 사용
+	chcon		: 임시 설정 방식
+
+	포트 접근 : firewall-cmd
+	semanage port
+
+	동작 제어 -> semanage boolean / setsebool / getsebool
+
+	사용 여부 : setenforce , getenforce , /etc/selinux/config
+
+
+
+
+
+
+
+
