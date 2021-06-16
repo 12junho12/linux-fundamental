@@ -1,0 +1,28 @@
+SSH - 원격접속(ssh, ssh-keygen , ssh-copy-id, scp)
+DNS - IP 주소와 이름주소를 맵핑해주는 서비스
+FTP - 파일을 원격으로 복사
+SAMBA - 원격 시스템 간에 디렉토리 / 장치 등을 공유 (윈도우 / 프린트)
+NFS - 원격 시스템 간에 디렉토리를 공유
+iSCSI - 스토리지(볼륨)를 원격으로 제공
+
+서비스 설정 순서
+1. 패키지 설치
+2. 서비스 설정 (사용자 / 파일 / 스토리지 / 서비스설정파일 / SELinux설정)
+3. 서비스 실행 (활성화, 재시작)
+4. 방화벽 설정
+
+웹서버
+-http / https 프로토콜으로 사용자들에게 특정 컨텐츠를 제공해주는 서버
+-클라이언트 도구로 IE,C,F ...
+-HTML 형식, CSS, PHP, Python
+-구성방식: apach, nginx
+-정적인 페이지 혹은 동적인 페이지를 만들 수 있다.
+
+apach web 구성방법
+1. 패키지 설치 -> httpd, +@ mod_ssl (webserver)
+2. 설정 (설정파일, 컨텐츠) -> /etc/httpd/conf/httpd.conf (메인)
+			/etc/httpd/conf.d/* (추가)
+			/var/www/html (컨텐츠)
+3. 서비스 활성화 -> httpd
+4. 방화벽 설정 -> http, https
+
