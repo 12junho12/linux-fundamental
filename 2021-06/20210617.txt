@@ -1,0 +1,43 @@
+NFS 서비스
+- 파일/디렉토리 등을 공유할 때에 사용하는 Linux 표준 프로토콜
+
+구성
+서버 쪽에서 디렉토리 공유 설정 ( 보안 : none , sys , krb5 , krb5i , krb5p )
+1. 패키지 설치	-> nfs-utils (기본OS 설치 시 포함)
+2. 서비스 구성	-> 디렉토리 준비(mkdir,chmod,chown,selinux..), 
+		    내보내기 설정 ( /etc/exports )
+			공유 디렉토리	공유대상(옵션)
+		=> 파일 작성/수정 시 " exportfs -r " 명령어 사용
+		NFS 설정파일 - /etc/nfs.conf , /etc/sysconfig/nfs => 파일 수정 시 서비스 재시작
+
+3. 서비스 활성화	-> nfs-server
+4. 방화벽 설정 	-> nfs (기본) , mountd/rpc-bind (클라이언트에서 검색 허용 시)
+
+
+클라이언트 쪽에서는 공유 디렉토리를 마운트 ( mount , /etc/fstab , autofs )
+1. 일반 마운트	-> mount  -o rw,sync  -t nfs  ServerIP:/PATH  MountPoint
+2. 영구 마운트	-> /etc/fstab
+		ServerIP:/PATH	MountPoint	nfs	rw,sync	0	0
+3. 자동 마운트
+	1) 패키지 설치		: autofs
+	2) 마스터 맵 파일 작성	: /etc/auto.master.d/XXXX.autofs
+				/-	매핑파일경로	-> 직접
+				/mnt	매핑파일경로	-> 간접
+	3) 매핑 파일 작성		: /etc/auto.XXXX
+				/mnt/nfs	-rw,sync	대상	-> 직접
+				nfs	-rw,sync	대상	-> 간접
+				*	-rw,sync	대상(&사용)	-> 와일드카드맵
+	4) 서비스 활성화		: autofs
+
+
+HTTPS 개념
+Web 서버는 기존에는 "HTTP" 프로토콜을 사용
+-> 보안에 취약해서 좀 더 안전하게 사용하기 위해 HTTPS로 전환
+=> SSL/TLS 를 이용하여 데이터를 암호화해서 전달(인증서)
+
+HTTPS 작동 원리
+1. 클라이언트에서 서버로 서비스 요청 (버전, 인코딩방식, 암호화 알고리즘 목록)
+2. 서버에서 클라이언트로 응답 (요청에 대한 결정, 서버의 인증서 전달, 공개 키 전달)
+3. 클라이언트가 비밀키를 생성 (서버의 공개키로 암호화해서 전달)
+4. 서버에서 비밀키 확인 (서버의 개인키로 복호화 해서 확인) -> 비 대칭키 알고리즘
+5. 통신 시 비밀키를 이용하여 데이터 암호화 후 전달 (대칭키 암호화)
