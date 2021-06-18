@@ -1,0 +1,147 @@
+SQL 구문
+
+SELECT	: 데이터를 확인할 때 사용하는 구문 (테이블/컬럼 지정, 조건식)
+
+DML - 데이터 관리 명령어 종류
+INSERT	: 데이터를 추가할 때 사용 (테이블을 지정, 하나의 로우 단위로 입력)
+UPDATE	: 데이터를 수정할 때 사용 (특정 컬럼 지정, 조건식)
+DELETE	: 데이터를 삭제할 때 사용 (테이블을 지정, 조건식)
+
+TCL - 트랜젝션 제어 구문들 (트랜젝션 : 하나의 작업 단위)
+COMMIT	: 수정한 작업 내용을 실제 스토리지에 저장
+ROLLBACK : 수정한 작업 내역을 취소하고 원래 상태로 복구
+
+DDL - 데이터베이스에서 사용하는 객체(테이블)를 관리하는 명령어
+CREATE	: 객체(테이블) 를 생성
+ALTER	: 특성이나 구조 등을 변경
+DROP	: 삭제
+
+DCL - 사용자 권한 설정
+GRANT	: 사용자 권한 부여
+REVOKE	: 사용자 권한 회수
+
+기본 사용법
+SELECT	컬럼이름...
+FROM	테이블이름	--> 필수
+WHERE	조건식		--> 대부분 필수적으로 사용
+GROUP BY
+HAVING		--> 그룹함수 사용 시 추가
+ORDER BY  정렬방식	--> 선택적으로 오름차순/내림차순으로 정렬가능
+
+INSERT  INTO  테이블이름 (컬럼이름...)
+VALUES	(값...)
+
+UPDATE  TO  테이블이름
+SET	컬럼=값		--> 수정할 데이터 값
+WHERE	조건식		--> 수정할 위치
+
+DELETE  FROM  테이블이름
+WHERE	조건식		--> 삭제할 위치
+
+CREATE  객체  
+만약 객체가 테이블이라면
+CREATE  TABLE  테이블이름
+(컬럼이름  데이터타입(길이)  특성... )
+
+ALTER  TABLE  테이블이름
+ADD/DROP/MODIFY/CHANGE		-> 변경사항 지정
+
+DROP  TABLE  테이블이름
+
+
+	https://github.com/datacharmer/test_db 에서 샘플 다운로드
+# unzip test_db-master.zip
+# cd test_db-master
+# mysql -u root -p < employees.sql
+# mysql -u root -p
+	> SHOW databases;
+	> USE employees;
+	> SHOW tables;
+
+연산자
+
+산술 비교연산자 : < , > , = , <= , >= , <> , != , BETWEEN , IN 
+
+문자 비교연산자 : = , LIKE
+	-> LIKE 사용 시 _ (한글자 대체) , % (0개 이상의 글자 대체)
+
+논리연산자 : AND , OR , NOT
+
+
+정렬
+DESC : 내림차순
+ASC : 오름차순(기본값)
+
+함수 : 단일 행 함수 , 다중 행 함수(그룹함수)
+단일 행 함수 - 형변환함수, 문자열함수, 숫자함수, 날짜함수, 일반함수
+다중 행 함수 - 합계, 평균, 분산, 최고값, 최소값, 개수 
+	=> 일반적으로는 테이블 전체의 행을 이용해서 하나의 결과를 도출
+	그룹 별로 나눠서 작업 가능 ( GROUP BY )
+
+제약조건
+PK : 테이블의 데이터들을 구분할 수 있는 유일한 값
+	(NULL 을 허용하지 않고 중복되지 않는 값)
+FK : 'A'라는 테이블의 값을 참조하는 특성
+NOT NULL : 비어있는 것을 허용하지 않음
+UQ : 중복없이 고유한 값
+Check : 기타 조건 부여
+
+employees 테이블에서 작업하세요.
+1. emp_no 값이 10100 이상 10110 이하인 값을 확인하세요.
+
+SELECT * FROM employees WHERE emp_no BETWEEN  10100 AND 10110;
+
+2. emp_no 값이 10020 이상인 값을 모두 삭제하세요.
+
+DELETE FROM employees WHERE emp_mo >=10020;
+
+3. 테이블의 모든 값을 확인하세요.
+
+SELECT * FROM employees;
+
+4. gender 가 M 인 항목들만 확인하세요.
+
+SELECT * FROM employees WHERE gender='M';
+
+5. gender 가 M 이면서 emp_no 가 10010 보다 큰 값을 확인하세요.
+
+SELECT * FROM employees WHERE gender='M';
+
+6. emp_no 가 홀수인 값만 확인하세요. ( MOD 함수 사용 )
+
+SELECT * FROM employees WHERE MOD(emp_no,2)=1;
+
+7. birth_date 가 1950년대(50~59)의 사람만 확인하세요.
+
+SELECT * FROM employees WHERE birth_date BETWEEN 19500101 AND 19591231;
+
+8. first_name 에 'a' 가 들어가는 경우만 찾으세요. (위치무관)
+
+SELECT * FROM employees WHERE first_name LIKE '%a%';
+
+9. first_name 에 'n' 이 연속 2번 들어가는 경우만 찾으세요. (위치무관)
+
+SELECT * FROM employees WHERE first_name LIKE '%nn%';
+
+10. list_name 에 'i' 가 3번 들어가는 경우만 찾으세요. (위치무관, 연속아님)
+
+SELECT * FROM employees WHERE first_name LIKE '%i%i%i%';
+
+11. gender 가 M 인 항목의 hire_date 를 오늘 날짜로 바꾸세요.
+
+UPDATE employees SET hire_date=20210618 WHERE gender="M";
+
+12. emp_no 가 10005, 10010, 10015 인 값들을 지우세요.
+
+DELETE FROM employees WHERE emp_no IN (10005,10010,10015)
+
+13. 모두 원래 상태로 되돌리고 데이터베이스를 종료합니다.
+
+ROLLBACK;
+
+
+
+
+
+
+
