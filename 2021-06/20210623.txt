@@ -1,0 +1,36 @@
+네트워크 관련 패키지 epel-release ->wordpress, nginx
+
+Web 서버와 WAS (웹 어플리케이션 서버)
+Web: 단순한 웹서버는 정적인 페이지만 제공
+	-> 추가적인 모듈 등을 구성해서 동적인 페이지 제공 가능
+WAS: 어플리케이션이 동작하고 그에 따라 사용자에게 서비스를 제공하는 서버
+
+CGI( Common Gateway Interface )
+	php, perl, pyhton.... 서버 사이드 스크립트로 서버스 제공
+
+Apache Tomcat
+-웹 어플리케이션 서버
+-자바 프로그램을 사용할 수 있도록 지원
+
+web - was 서버 연동
+=> 기능적으로 분리 / 로드밸런스 기능을 제공
+설정 과정
+1. tomcat 홈페이지에서 모듈 다운로드 ( tomcat_connector )
+2. 압축해제 후 configure 스크립트 실행
+	-> gcc, httpd-devel 패키지 설치
+3. make 명령어 (gcc) 로 컴파일작업
+   	-> /usr/lib64/httpd/modules/mod_jk.so 파일이 생성된다.
+4. 설정파일 설정
+	-> /usr/share/tomcat/conf/server.xml
+	/etc/httpd/conf.d/mod_jk.conf	: 모듈에 대한 설정파일 생성
+	/etc/httpd/conf.d/vhost.conf		: IFModule 블록을 추가
+	/var/run/mod_jk	디렉토리 생성 후 소유권 apache로 설정
+5. 서비스 활성화 -> httpd tomcat
+6. 방화벽 설정 -> http, 8080/tcp
+
+
+클라이언트 <- Proxy -> Apache <--> Tomcat
+클라이언트----------->Nginx 프록시서버--------------> Apache 서버
+	Nginx주소		Apache주소/포트
+
+squid/haproxy ...
