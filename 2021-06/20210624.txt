@@ -1,0 +1,49 @@
+DHCP
+- Dynamic Host Configuration Protocol
+- IP 주소를 할당해주는 역할 (공유기, 하이퍼바이저)
+- 동작단계
+	1) 클라이언트가 서버를 검색 (67/UDP,68/UDP)
+		브로드케스트 통신 ( source-address 0.0.0.0 )
+	2) DHCP 서버가 요청을 확인하고 본인의 IP 주소를 알림
+		클라이언트가 사용할 IP 주소정보를 함께 전달
+		브로드케스트 통신
+	3) 클라이언트가 서버에게 확인
+		Server Identification Option (DHCP 서버를 구분)
+	4) 서버가 IP 주소 정보를 저장 및 전달
+- 할당 방식
+	1) 동적 할당 - 요청에 따라 관리 범위 내의 IP를 자동으로 할당(기간제한)
+	2) 수동 할당 - MAC 주소에 따라 IP주소를 직접 할당하는 방식
+
+FTP 서버
+- 원격으로 파일을 전송하는 프로토콜 / 서비스
+- 동작모드 : Active / Passive
+	Active : 서버가 포트를 20, 21 사용
+	Passive : 서버가 추가 포트를 사용 (번호는 랜덤)
+
+PXE 서버
+- Preboot eXecution Environment
+- 네트워크가 연결된 시스템이 처음 부팅 시 설치 및 설정을 자동으로 진행
+- DHCP서버 + FTP서버 + WEB서버 + syslinux
+  IP정보	       ISO이미지               리눅스시스템의 부팅
+
+
+구성방법		server-world.info
+1. 패키지 - syslinux, xinetd, tftp-server, dhcp
+
+2. 서비스 구성 (순서 강관없음)
+	1) xinetd 구성 ->tftp 활성화
+	2) dhcp 구성 -> IP할당, PXE 서버 주소 및 파일경로
+	3) tftp 구성 -> 이미지 파일들 복사 및 메뉴파일 작성
+	4) http 구성 -> PXE 접근 제한 설정
+
+	-> 가상호스트 디렉토리 경로 = 마운트 경로
+	가상호스트 알리아스 = pxelinux.cfg/default 에서 IP 주소 뒤의 이름
+	pxelinux.cfg/default 에 kernel/append의 이름 = 파일 복사 경로
+
+3. 서비스 활성화 - dhcp, tftp, httpd, xinetd
+4. 방화벽 - tftp, gttp, dhcp
+
+
+
+
+
