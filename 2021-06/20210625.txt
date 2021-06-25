@@ -1,0 +1,61 @@
+스토리지 
+-데이터를 저장
+-DAS / NAS / SAN
+
+Gluster 스토리지
+- GlusterFS는 확장성이 가능한 NAS 파일 시스템
+- 다수의 스토리지에 대한 병렬 처리 기능 제공
+- 오픈소스 ( 상용제품:레드햇 )
+- 클라우드 및 스트리밍 서비스 등에 사용
+- 규모나 성능을 저하시키지 않고도 서비스를 제공할 수 있는 가성비 좋은 스토리지
+- 소프트웨어 정의 스토리지( Software Defined Storage, SDS )
+- 베어메탈, 가상, 컨테이너 및 클라우드 환경에 배포
+- 특징
+	확장 가능한 스토리지 관리: 스케일 업(수직) / 스케일 아웃(수평)
+	빠르고 간단하며 벤더 종속성이 없음: 제품에 구애받지 않음
+	컨테이너에 최적화(Openshift 사용 시)
+	여러 환경에서 사용하기 적합
+	데이터를 분산처리 : 단일 실패 지점 및 병목현상 발생 가능성 줄어듦
+	고가용성 기능 제공
+
+클러스터 - 여러 시스템을 연결해서 구성하는 방식/단위
+노드 - 클러스터 구성 시 각각의 시스템 
+스토리지 풀 -물리적인 스토리지들을 묶어서 만드는 논리적인 단위 
+brick - Gluster 구성에서 사용하는 각 스토리지 장치
+볼륨 - 사용자가 사용하는 단위 (클라이언트에게 제공되는 파일시스템)
+
+구성과정
+1.시스템 준비 - VM 3대(2대 이상), 디스크 2개 (root 제외하고 1개 이상)
+2.디스크 준비 - 파티셔닝 및 마운트 (xfs파일시스템으로)
+3. 패키지 설치 - centos-release-gluster(저장소설정), glusterfs-server(설치)
+4. 서비스 활성화 -glusterd
+5. 방화벽 설정 -glusterfs
++@. 이름주소 사용시 모든 노드에서 DNS 연결 또는 /etc/hosts 파일에 등록
+6. 클러스터 구성(스토리지 풀)
+	#gluster peer probe node2
+	#gluster peer probe node3 (노드 이름 혹은 IP)
+	#gluster peer status -> 확인
+	#gluster peer detach 노드 -> 분리
+7. 볼륨 생성
+	#gluster volume create 볼륨이름 replica 개수 노드
+	#gluster volume info/list -> 확인
+	#gluster volume start -> 실행
+
+mount -t glusterfs node1:/gv0 /mnt
+
+
+네트워크 구성
+- 인터페이스마다 대역폭 한계가 있음
+- 인터페이스를 여러 개 묶어서 사용 가능
+- bonding / teaming / LACP : 대역폭 확장 / 장애조치 / 로드벨런싱 기능 제공
+
+teaming 구성
+runner : 동작방식
+- broadcast : 각각의 인터페이스에서 모두 패킷을 전송
+- roundrobin : 인터페이스가 한번씩 번갈아가면서 패킷을 전송
+- loadbalance : 대역폭 등에 따라 번갈아가면서 패킷을 전송
+- activebackup : 하나만 사용
+- lacp : 스위치 설정에 따르는 방식
+
+- nmcli 명령어로 구성
+	type
