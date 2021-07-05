@@ -1,0 +1,98 @@
+오픈스택 - 클라우드 컴퓨팅의 일종
+
+클라우드 컴퓨팅
+- 사용자의 요청에 따라 공유된 컴퓨터의 자원/데이터를 제공
+- 온디맨드 방식
+- 인터넷(네트워크)만 되면 어디서든 요청
+
+클라우드 서비스 모델
+- SaaS (Software as a Service)
+	사용자가 특정 어플리케이션을 그대로 사용
+	ex. 구글문서 
+- PaaS (Platform as a Service)
+	개발자가 플랫폼에서 어플리케이션 개발/테스트
+	운영체제까지 구성해서 제공하는 방식
+- IaaS (Infrastructure as a Service)
+	사용자에게 리소스를 제공(cpu/ram/disk)
+	직접 시스템을 만들어서 사용하는 방식
+
+클라우드 서비스 종류
+- Public Cloude  : AWS, AZURE, GCP 등
+		사용자가 관리X, 비용 지불 후 사용.
+		관리 범위가 작다. (편의성)
+		보안 구성 ( 공급업체에서 담당 )
+- Private Cloude : 오픈스택 등
+		직접 관리해야 해서 복잡하고 힘들다.
+		초기 구축 비용이 많이 든다.
+		유지 비용이 절감.
+		보안 위험 및 어려움
+- Hybrid Cloude : 두 가지를 혼합한 방식
+
+오픈스택 -> IaaS / Private  방식의 클라우드 환경
+관리 방식 : dashboard (그래픽환경)
+	 openstack (명령어)
+	 REST API 
+
+가상머신 = 게스트머신 = 인스턴스 = 서버
+이미지 : 부팅 가능한 운영체제가 설치된 디스크 파일
+
+핵심 서비스
+Keystone : 사용자 인증
+Nova	: 인스턴스를 생성/관리
+Glance	: 이미지 관리
+Horizon	: 대시보드(웹 인터페이스) 관리 방법 제공
+Swift	: 오브젝트 스토리지 관리 서비스
+Cinder	: 블록 스토리지 관리 서비스 (디스크)
+Neutron	: 네트워크 관리 서비스
+Heat	: 오케스트레이션 서비스 (리소스 관리)
+Ceilometer : 데이터 미터링 서비스
+	-> gnocchi , panko , aodh 로 세분화 됨.
+
+	allinone.osp.exam.com
+설치 작업
+1. 가상머신 준비
+	1) RAM - 8G 이상 (16G)
+	2) CPU - 4core (8core)
+	3) DISK - 100G 이상 (150G)
+	4) OS - CentOS7 이상 (Ubuntu 16이상)
+	5) 기능 - CPU가상화, NIC 무작위모드
+2. 운영체제 설치
+	1) Network 설정 (정적IP , 호스트네임)
+	2) NTP 설정 (시간동기화)
+	3) 디스크 파티셔닝 (권장사항에 맞게) -> root에 전체
+3. 초기 구성
+	1) /etc/hosts 파일에 주소 등록
+	2) NM , firewalld 서비스를 비활성화
+	3) network , chronyd 서비스 활성화
+4. 설치
+	1) yum update 로 커널/패키지 최신 버전으로 업
+	2) 재부팅
+	3) centos-release-openstack-XXXX (stein)
+	4) 추가 업데이트 
+	5) openstack-packstack , openstack-selinux
+	6) packstack 실행
+	-> 실행 시 answer-file 사용
+	default / admin 패스워드
+	각종 서비스 설치 유무
+	Neutron 서비스 설정
+	( openvswitch -> ovs  /  ovn -> ovn )
+		-> 외부 및 터널 브릿지에 대한 설정
+	+@ Swift 서비스 (파일시스템)
+	+@ 시스템 IP 주소
+
+# vim /etc/hosts		-> 이름/IP 등록
+# systemctl disable NetworkManager firewalld
+# systemctl enable network chronyd
+# yum update -y ; reboot
+# yum install centos-release-openstack-stein.noarch -y
+# yum update -y 
+# yum install openstack-packstack openstack-selinux
+# packstack --gen-answer-file=answers.txt
+# vim answers.txt			-> 수정
+# packstack --answer-file=answers.txt
+
+
+
+
+
+
