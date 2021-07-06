@@ -1,3 +1,68 @@
+가상화와 클라우드
+
+가상화
+- 물리적인 장치 구성에 대한 부분을 논리적으로 구성하는 기술
+- 서버 / 스토리지 / 네트워크 등을 가상화
+- 1960 년대 최초로 가상화 개념 언급 (관심X)
+	-> IBM 하드웨어 파티셔닝
+- H/W 기술이 발전하면서 관심이 증대
+
+최초 - 운영체제 및 간단한 어플리케이션
+기술발전 후 - 어플리케이션 개수 증가 (리소스 낭비 감소)
+	=> 시스템 과부하 , 장애 발생 , 보안
+가상화 사용 - 어플리케이션을 격리환경에서 동작
+	-> 시스템 가상화
+
+운영체제의 역할 - 시스템의 물리적인 리소스를 관리하고
+		어플리케이션의 리소스 접근/사용을 도움
+
+시스템 가상화에서 HV 의 역할
+- 가상머신 마다 운영체체/어플리케이션 이 동작
+- 각 운영체제(게스트OS) 의 직접적인 접근을 차단 (트랩)
+- 가상머신 내부의 요청에 대해서 실제 운영체제(호스트OS)에
+  변환 및 재요청 해주는 작업 (에뮬레이터)
+- 가상머신 간의 격리 기능 제공
+
+하이퍼바이저 종류
+- VirtualBox , VMware Workstation , KVM 등.
+
+가상화 종류
+- 네트워크 가상화
+	네트워크 장비 / 기능을 논리적으로 구현
+	장비 - SDN (Software Define Network)
+	기능 - NFV (Network Fuction Virtualization)
+- 스토리지 가상화
+	스토리지를 논리적으로 분할/합쳐서 사용하는 기술
+	SDS ( Software Define Storage )
+	LVM , RAID , Gluster , Ceph ...
+- 시스템 가상화
+	시스템(서버)를 논리적으로 분할해서 사용하는 기술
+	-> VM 등을 만들어서 사용하는 기술
+	호스트 가상화
+	하이퍼바이저 가상화 (서버가상화)
+	컨테이너 가상화 -> 도커/쿠버네티스
+
+호스트 가상화
+- 운영체제 설치 후, 하이퍼바이저 소프트웨어를 설치하는 방식
+- 장점 : 관리 및 사용하기 편하다.
+- 단점 : 오버헤드가 크다. 시스템 리소스에 대한 제한.
+
+하이퍼바이저 가상화
+- 운영체제 X , HW 위에 바로 하이퍼바이저를 설치
+- 장점 : 호스트 가상화 보다는 오버헤드가 줄어든다. 
+	시스템 리소스에 대한 제한이 적다.
+	성능 및 보안에 유리
+- 단점 : 사용에 제약이 많다. (불편함)
+
+컨테이너 가상화
+- 어플리케이션만 격리하는 가상화 방식 (별도의 OS 없음)
+- 장점 : 배포가 빠르고 많은 배포가 가능하다.
+	오버헤드가 매우 적다.
+- 단점 : OS가 따로 없다. 
+
+전가상화 / 반가상화		- 가상화 분류
+type1 / type2		- 하이퍼바이저 분류
+
 오픈스택 - 클라우드 컴퓨팅의 일종
 
 클라우드 컴퓨팅
@@ -91,6 +156,20 @@ Ceilometer : 데이터 미터링 서비스
 # vim answers.txt			-> 수정
 # packstack --answer-file=answers.txt
 
+수정 내용
+CONFIG_DEFAULT_PASSWORD=1234
+CONFIG_HEAT_INSTALL=y
+CONFIG_NTP_SERVERS=kr.pool.ntp.org
+CONFIG_KEYSTONE_ADMIN_PW=1234
+CONFIG_LBAAS_INSTALL=y
+CONFIG_NEUTRON_ML2_MECHANISM_DRIVERS=openvswitch
+CONFIG_NEUTRON_L2_AGENT=openvswitch
+CONFIG_NEUTRON_OVS_BRIDGE_MAPPINGS=extnet:br-ex
+CONFIG_NEUTRON_OVS_BRIDGE_IFACES=br-ex:enp0s3
+CONFIG_NEUTRON_OVS_TUNNEL_IF=enp0s8
+CONFIG_NEUTRON_OVS_TUNNEL_SUBNETS=192.168.56.0/24
+CONFIG_SWIFT_STORAGE_FSTYPE=xfs
+CONFIG_PROVISION_DEMO=n
 
 
 
