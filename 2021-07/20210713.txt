@@ -1,0 +1,163 @@
+오픈스택 네트워크
+- Neutron 서비스로 관리
+- SDN ( Software Defined Network ) 기술이 사용
+
+SDN 이란?
+- 네트워크 가상화 기술
+- 네트워크 환경을 소프트웨어(프로그램)으로 관리
+- 중앙집중 관리방식을 사용
+- 컨트롤 플레인과 데이터 플레인의 분리 -> openflow 사용
+- 네트워크 환경을 좀더 유연하고 즉각적인 구성으로 변화
+- 네트워크 장비에 대한 비용이 감소
+- 장비에 대한 의존도가 낮아졌다. (특정제품)
+NFV ( Network Fuction Virtualization )
+- 방화벽 / IPS / VPN / LoadBalancer ... 
+- 이 장비들의 기능을 소프트웨어로 구현
+
+리눅스 환경의 네트워크
+- NetworkManager 서비스 비활성화
+	-> Neutron 서비스와 충돌
+- kolla 프로젝트를 이용한 배포 시 (최신버전)
+	컨테이너를 이용한 서비스 동작
+	-> 컨테이너 네트워크를 위해 NM 가 필수
+	인터페이스 설정파일에서 각각 비활성화 가능
+	( NM_CONTROLLED=no )
+- 소프트웨어 브릿지 (리눅스브릿지/OVS브릿지)
+- 배포 시에 네트워크 배포방식을 OVS / OVN 방식 선택
+	-> OVS 방식의 경우 Linux-Bridge 도 함께 사용.
+	OVN 방식의 경우에는 OVS-Bridge 만 사용.
+
+	실습을 위해서 인터페이스를 2개 정도 추가
+	(다른 가상머신 사용도 가능)
+
+리눅스 브릿지
+- 물리적인 인터페이스와 가상 인터페이스를 연결
+- 커널 공간에서 생성 및 작업 수행
+
+OVS 브릿지
+- OVS : Open Virtual Switch
+- 리눅스 브릿지의 한계 : 일반적인 네트워크 프로토콜 이외에 
+		확장 프로토콜 지원에서 어려움
+- Neutron 서비스로 (SDN기술) 네트워크 구성
+	=> 추가 기능 제공을 위해 사용 ( VxLAN, GRE , ... , Openflow)
+
+
+
+
+
+실습
+1. 리눅스 브릿지
+# yum install -y bridge-utils
+# brctl addbr demo-br
+# ip address add 192.168.100.1/24 dev demo-br
+# brctl addif demo-br enp0s10
+
+# vim /etc/sysconfig/network-scripts/ifcfg-demo-br
+TYPE=Bridge
+BOOTPROTO=none
+NAME=demo-br
+DEVICE=demo-br
+ONBOOT=yes
+IPADDR=192.168.100.1
+PREFIX=24
+
+# vim /etc/sysconfig/network-scripts/ifcfg-enp0s10
+DEVICE=enp0s10
+ONBOOT=yes
+BRIDGE=demo-br
+			=> systemctl restart network / nmcli con reload 
+
+# nmcli con add type bridge con-name nm-br ifname nm-br
+# nmcli con mod nm-br ipv4.addresses 192.168.200.1/24
+# nmcli con add type bridge-slave ifname enp0s9 con-name br-port master nm-br
+
+
+OVS 브릿지
+# yum install centos-release-openstack-queens.noarch -y
+# yum install -y openvswitch
+# systemctl start openvswitch.service
+# ovs-vsctl add-br ovs-br
+# ovs-vsctl add-port ovs-br enp0s9
+# ip address add 192.168.200.1/24 dev ovs-br
+
+
+인스턴스의 네트워크 패킷 흐름 ( VM - VM )
+1. VM -> Linux-Bridge (보안그룹 정책 확인)
+2. L-B -> br-int (OVS)
+3. br-int -> br-tun (터널)
+4. br-tun -> eth0 (물리적인 인터페이스)	----> (보내는 인스턴스)컴퓨트노드
+5. eth0 -> eth0(터널링)   ---------------------------> 컴퓨트 => 네트워크
+6. eth0 -> br-tun
+7. br-tun -> br-int ( 네트워크 네임스페이스 )
+8. 네임스페이스에서 전달 대상 확인
+9. br-int -> br-tun -> eth0 -> eth0 -> br-tun -> br-int
+			(받는 인스턴스가 동작 중인 컴퓨트 노드)
+10. br-int -> L-B (보안그룹 정책 확인)
+11. L-B -> VM 
+
+인스턴스의 네트워크 패킷 흐름 ( VM - 외부 )
+1. VM -> Linux-Bridge (보안그룹 정책 확인)
+2. L-B -> br-int (OVS)
+3. br-int -> br-tun (터널)
+4. br-tun -> eth0 (물리적인 인터페이스)	----> (보내는 인스턴스)컴퓨트노드
+5. eth0 -> eth0(터널링)   ---------------------------> 컴퓨트 => 네트워크
+6. eth0 -> br-tun
+7. br-tun -> br-int ( 네트워크 네임스페이스 )
+8. br-int -> br-ex (외부 브릿지)
+9. br-ex -> eth1 -> 외부
+10. 받을 때는 역순.
+	=> 문제점 : 네트워크 노드에 부담이 커진다.
+		DVR(Distributed Virtual Router) 설정 가능
+		설정 시, 각 컴퓨트 노드에서 외부로 다이렉트 연결
+네트워크 구성이 OVS 를 사용하는 경우는 DVR 기능을 따로 설정
+	OVN 방식으로 구성 시, 기본 설정
+
+네트워크 연결 유형 (type)
+1. Local - 단일 네트워크(테스트용)
+2. Flat - 여러 대의 노드를 사용할 수 있는 네트워크
+	인스턴스와 외부 네트워크를 직접 연결 가능
+	물리적인 네트워크/인터페이스가 여러 개 필요.
+3. VLAN - 네트워크 분할을 통해 인스턴스와 물리 시스템의 네트워크 공유가 가능
+	스위치에서 VLAN 설정 시, 논리적으로 네트워크 분할
+	4천여개 정도의 네트워크 사용 가능
+4. VXLAN - VLAN 의 확장버전 (논리적 네트워크 개수 증가 및 터널링 기술)
+5. GRE - VXLAN 과 유사한 프로토콜
+6. Geneve - 각종 타입 간의 호환성을 지원하기 위해 사용
+
+
+네트워크 구성 확인
+1. 내부 네트워크 ( 192.168.50.0/24 ) 생성
+2. 네임스페이스 / OVS 확인 
+3. 외부 네트워크 생성
+4. 네임스페이스 / OVS 확인 
+5. 라우터 생성 및 연결
+6. 생성 후 확인 및 연결 설정 후 확인
+7. Floating IP 생성 후 확인
+
+	ip netns list/exec	,	ovs-vsctl show
+	openstack 환경에서도 확인 가능
+
+=================================================
+오픈스택 스토리지
+임시 스토리지 - 인스턴스의 생명주기와 동일
+	인스턴스 생성 시 만들어지고 삭제 시 같이 제거되는 저장장치
+	Flavor 를 통해서 생성되는 인스턴스의 디스크 공간
+	Root / Eph 디스크 -> 일반적으로 로컬 스토리지 사용(컴퓨트 노드)
+	로컬 스토리지 사용 시 성능 향상
+	데이터가 영구저장이 안된다.
+
+영구 스토리지 - 데이터를 인스턴스 여부와 관계없이 영구적인 저장이 가능
+	블록 스토리지 ( Cinder ) : 볼륨을 생성해서 인스턴스에 연결
+	오브젝트 스토리지 ( Swift ) : 인스턴스와 관계 없이 사용
+	공유 파일 시스템 ( Manila ) : 여러 인스턴스에 동시 연결 가능
+
+
+
+
+
+
+
+
+
+
+
