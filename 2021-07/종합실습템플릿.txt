@@ -1,0 +1,96 @@
+heat_template_version: queens
+
+description: >
+  This is my first template
+  This template is deploy instance
+
+parameters:
+  PubNetID:
+    type: string
+    description: Network ID for Public
+    default: template_pubnet
+  PriNetID:
+    type: string
+    description: Network ID for Private
+    default: template_prinet
+  ImageID:
+    type: string
+    default: ciroos
+  FlavorID:
+    type: string
+    default: m1.tiny
+  KeyID:
+    type: string
+    default: testkey
+  SGID:
+    type: string
+    default: template_sg
+  ServerID:
+    type: string
+    default: template_instance
+
+resources:
+  create_server:
+    type: OS::Nova::Server
+    properties:
+      name: { get_param: ServerID }
+      flavor: { get_param: FlavorID }
+      image: { get_param: ImageID }
+      networks:
+      - network: { get_resource: create_prinet }
+      key_name: { get_param: KeyID }
+  create_pubnet:
+    type: OS::Neutron::ProviderNet
+    properties:
+      name: { get_param: PubNetID }
+      network_type: flat
+      physical_network: extnet
+  create_pub_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      name: tem_pub_sub01
+      network_id: { get_resource: create_pubnet }
+      cidr: 10.0.2.0/24
+      gateway_ip: 10.0.2.1
+      enable_dhcp: false
+      allocation_pools:
+        - start: 10.0.2.100
+          end: 10.0.2.200
+  create_prinet:
+    type: OS::Neutron::Net
+    properties:
+      name: { get_param: PriNetID }
+  create_pri_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      name: tem_sub01
+      network_id: { get_resource: create_prinet }
+      cidr: 192.169.10.0/24
+  create_sg:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: { get_param: SGID }
+      rules: [{ "port_range_max": 22, "port_range_min": 22, "protocol": tcp, "remote_ip_prefix": 10.0.2.0/24 },{"direction": ingress, "protocol": icmp, "remote_ip_prefix": 0.0.0.0/0 }]
+  create_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: create_prinet }
+      fixed_ips:
+        - subnet_id: { get_resource: create_pri_subnet }
+      security_groups: { get_resource: create_sg }
+  create_IP:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: { get_resource: create_pubnet }
+      port_id: { get_resource: create_port }
+  create_router:
+    type: OS::Neutron::Router
+    properties:
+      name: tem_router
+      external_gateway_info:
+        network: { get_param: PubNetID }
+  router_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: create_router }
+      subnet_id: { get_resource: create_pri_subnet }
