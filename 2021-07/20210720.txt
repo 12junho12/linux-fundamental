@@ -1,0 +1,107 @@
+템플릿  ->  스택  ->  리소스
+
+템플릿 : 리소스에 대한 정의
+openstack stack create	: 스택 생성
+	(해당 템플릿의 모든 리소스가 배포)
+openstack stack delete	: 스택 제거
+	(모든 리소스가 제거)
+openstack stack update	: 템플릿의 변경사항 반영
+	--dry-run 옵션 사용 시 테스트 가능
+
+=> 1) 리소스 관리가 편해진다. 
+     2) 사용량을 모니터링하면 사용량에 따른 크기 제어
+	=> 인스턴스를 로드밸런서로 묶어준다.
+
+로드밸런서
+- 개념 : 	외부의 접근 포인트를 제공하면서 내부 인스턴스들에 	대한 부하분산 기능 제공
+실습 내용
+1) 이미지/플레이버/내부네트워크(192.168.0.0/24) 생성
+	centos 이미지 사용
+	vcpu:1 , ram:2G , disk:10G
+2) 외부네트워크/Floating IP 생성
+3) 인스턴스 생성 (2개,키페어) - 접속 시 인스턴스 이름 출력
+4) 로드밸런서 구성 
+
+로드밸런서
+  name:
+  vip_subnet:
+리스너
+  protocol
+  protocol_port
+  loadbalancer
+풀
+  lb_algorithm 
+  protocol
+  listener
+  loadbalancer
+풀멤버
+  address: String
+  pool: String
+  protocol_port: Integer	
+  subnet: String		
+  weight: Integer
+모니터
+  delay: Integer
+  expected_codes: String
+      http_method: String
+      max_retries: Integer
+      pool: String
+      timeout: Integer
+      type: String
+      url_path: String
+
+| OS::Neutron::LBaaS::HealthMonitor            |
+| OS::Neutron::LBaaS::L7Policy                 |
+| OS::Neutron::LBaaS::L7Rule                   |
+| OS::Neutron::LBaaS::Listener                 |
+| OS::Neutron::LBaaS::LoadBalancer             |
+| OS::Neutron::LBaaS::Pool                     |
+| OS::Neutron::LBaaS::PoolMember
+
+
+샘플
+heat_template_version: queens
+description: This is Loadbalancer Template
+parameters:
+  private_net:
+    type: string
+    default: private_subnet
+resources:
+  create_loadbalancer:
+    type: OS::Neutron::LBaaS::LoadBalancer
+    properties:
+      name: Template_LB
+      vip_subnet: { get_param: private_net }
+  create_listener:
+    type: OS::Neutron::LBaaS::Listener
+    properties:
+      protocol: http
+      protocol_port: 80
+      loadbalancer : { get_resource: create_loadbalancer }
+  create_pool:
+    type: OS::Neutron::LBaaS::Pool
+    properties:
+      lb_algorithm: round_robin
+      protocol: http
+      listener: { get_resource: create_listener }
+      loadbalancer: { get_resource: create_loadbalancer }
+  create_pool_member:
+    type: OS::Neutron::LBaaS::PoolMember
+    properties:
+      address: { get_attr: [ create_instance, first_address ] }
+      pool: { get_resource: create_pool }
+      protocol_port: 80
+      subnet: { get_param: private_net }
+  create_monitor:
+    type: OS::Neutron::LBaaS::HealthMonitor
+    properties:
+      type: http
+      delay: 5
+      expected_codes: 200
+      http_method: get
+      max_retries: 3
+      timeout: 5
+      url_path: /
+      pool: { get_resource: create_pool }
+
+
