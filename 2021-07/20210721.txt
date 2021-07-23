@@ -1,0 +1,129 @@
+Heat 서비스
+- 템플릿 기반으로 스택(리소스의 집합)을 배포/관리를 하는 서비스
+- 스택은 정적스택 / 동적스택
+- 정적스택 : 템플릿에 리소스의 형태 및 크기를 고정
+- 동적스택 : +@ 사용량에 대한 조건도 지정
+
+Ceilometer 서비스
+- 오픈스택 환경 내의 리소스 사용량을 모니터링/측정 해주는 서비스
+- 관리자 입장에서 시스템의 리소스 모니터링 및 관리
+- 사용자의 사용량에 따른 과금정책 수립
+- Heat 서비스와 연계해서 리소스의 동적인 관리
+
+구성 요소
+- 에이전트 : 어떤 작업을 위한 세부 서비스 (모듈)
+	- 수집 방식에 따라 분류
+	Notification : 메시지큐(AMQP)를 이용한 수집
+	Polling : 직접 API 를 모니터링해서 데이터를 수집
+		Compute : 컴퓨트노드의 사용량(인스턴스) 측정
+		Central : Compute 에이전트과 관련없는 데이터
+		IPMI : H/W 사용량에 대한 측정
+서비스 동작 3단계
+1. 데이터 수집 : 에이전트를 이용해서 사용량에 대한 데이터 수집
+2. 데이터 처리 : 수집한 데이터를 분류/처리
+	1) 데이터 변환
+	2) 데이터 전송
+3. 데이터 저장 / 접근
+Gnocchi : 시계열 데이터베이스 서비스
+Measure - Redis ( 키-벨류 형태의 스토리지 )
+Metrics - Ceph ( 블록/오브젝트/파일 스토리지 )
+Index - 관계형데이터베이스
+
+openstack metric 명령어로 리소스의 사용량/보관정책 등등
+	메트릭 정보를 확인할 수 있다.
+	resource-type : 리소스 종류들을 확인
+	resource : 특정 리소스의 정보를 확인
+	measures : 원본 수집 데이터 확인
+	
+
+템플릿 작성 시 사용하는 리소스 타입 정리
+| OS::Cinder::Volume                           |
+| OS::Cinder::VolumeAttachment                 |
+| OS::Cinder::VolumeType                       |	=> 볼륨관리
+
+| OS::Glance::Image                            |	=> 이미지관리
+
+| OS::Keystone::Domain                         |
+| OS::Keystone::Project                        |
+| OS::Keystone::Region                         |	=> 격리공간(도메인/프로젝트/리전)
+
+| OS::Keystone::User                           |
+| OS::Keystone::UserRoleAssignment             |
+| OS::Keystone::Group                          |
+| OS::Keystone::GroupRoleAssignment            |
+| OS::Keystone::Role                           |	=> 사용자/역할 관리
+
+| OS::Keystone::Service                        |
+| OS::Keystone::Endpoint                       |	=> 서비스/앤드포인트 관리
+
+| OS::Neutron::LBaaS::HealthMonitor            |
+| OS::Neutron::LBaaS::Listener                 |
+| OS::Neutron::LBaaS::LoadBalancer             |
+| OS::Neutron::LBaaS::Pool                     |
+| OS::Neutron::LBaaS::PoolMember               |	=> 로드밸런서 관리
+
+| OS::Neutron::FloatingIP                      |
+| OS::Neutron::FloatingIPAssociation           |	=> IP 생성/연결
+
+| OS::Neutron::ProviderNet                     |
+| OS::Neutron::Net                             |
+| OS::Neutron::Subnet                          |	
+| OS::Neutron::Port                            |	=> 네트워크 관리
+
+| OS::Neutron::Router                          |	
+| OS::Neutron::RouterInterface                 |	=> 라우터 관리
+
+| OS::Neutron::SecurityGroup                   |
+| OS::Neutron::SecurityGroupRule               |	=> 보안그룹 관리
+
+| OS::Nova::Flavor                             |
+| OS::Nova::KeyPair                            |
+| OS::Nova::Quota                              |
+
+| OS::Nova::Server                             |
+| OS::Nova::ServerGroup                        |	=> 인스턴스 관리
+
+| OS::Swift::Container                         |	=> 컨테이너 관리
+
+
+OS::Aodh::GnocchiAggregationByResourcesAlarm	=> 사용량에 따른 이벤트 발생
+  metric: 수집할 데이터 종류
+  resource_type: 리소스 종류
+  aggregation_method: 데이터 수집 방식
+  granularity: 수집 기간
+  comparison_operator: 비교
+  threshold: 비교값(기준)
+  evaluation_periods: 발생 간격
+  alarm_actions: 알람 발생 시 취할 액션(이벤트)
+
+OS::Heat::AutoScalingGroup	=> 자동 확장 시 리소스들의 그룹(최대/최소)
+  cooldown: 반응 간격(초)
+  desired_capacity: 리소스의 초기 크기
+  max_size: 리소스의 최대 크기 
+  min_size: 리소스의 최대 크기
+  resource: 리소스의 구성
+
+OS::Heat::ScalingPolicy	=> 자동 확장 시 정책
+  adjustment_type:
+      - change_in_capacity : 리소스의 절대 수가 범위로 된 경우 사용
+      - exact_capacity : 기존 리소스의 수가 크기 조정 시 정의한 수로 교체될 때 사용
+      - percent_change_in_capacity : 크기 조정 시 백분율 기준일 때 선택
+  auto_scaling_group_id: 정책에 맞게 조정할 그룹(리소스)의 아이디
+  cooldown:  반응 간격(초)
+  scaling_adjustment: 타입을 change_in_capacity 로 설정했을 때 사용(크기 조절 단위)
+
+단계적인 실습 
+0. 이미지/플레이버/키패어/외부네트워크 항목들은 직접 만들기
+** 이후는 템플릿으로 작업
+1. 네트워크를 생성 
+2. 인스턴스를 생성 (이미지/플레이버/네트워크/키패어) - cirros / m1.tiny
+3. 라우터 생성 및 연결
+4. 유동IP 생성 및 연결
+5. 보안그룹 생성/연결
+6. 볼륨 생성 및 연결
+7. 하나의 템플릿으로 위 항목들 구성
+8. environment.yml 파일을 생성하고 새로운 템플릿에서 불러오기 사용
+9. 8번 파일을 이용해서 1~6번 항목들을 모듈화 구성
+10. 스케일링 방식으로 인스턴스 개수 조절
+11. 로드밸런서 및 풀을 구성해서 인스턴스 개수 조절
+
