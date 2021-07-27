@@ -1,0 +1,104 @@
+IaC(Infrastructure as Code)
+ - 코드로 인프라스트럭처를 관리함
+ - 인프라에 대한 정의를 구현하고 관리함
+ - 인프라 정의 파일을 한번 정의하면 여러번 반복해서 사용이 가능함
+
+IaC 장점
+ - 비용절감
+ - 신속성
+ - 안정성이 높음
+ - 인프라에 대한 버전 관리가 가능함
+ - 재사용성
+
+IaC 도구 분류
+
+1) 구성관리(Configuration Management)
+ - Ansible, Chef, Pupet, SaltStack 등
+
+2) 배포(Deployment)
+ - AWS Cloudformation, Openstack Heat, Terraform 등
+
+절차적 언어: 원하는 최종 상태에 도달하기 위해 코드가 단계별로 정의도고 실행되는 언어
+ - Ansible, Chef
+
+선언적 언어: 원하는 최종 형태만 정의하면 구성에 필요한 세부 절차는 알아서 실행되는 언어
+ - AWS Cloudformation, Pupet, SaltStack, Terraform 등
+
+마스터 및 에이전트 유무
+ - 마스터: 인프라의 정보, 구성 관리 및 배포를 위한 정보를 가진 서버
+   - Chef, Pupet, SaltStack
+ - 에이전트: 서버로부터 명령을 전달받아 수행하기 위한 프로그램
+   - Chef, Pupet, SaltStack
+
+Ansible
+ - 애플리케이션 및 IT 인프라 관리를 자동화 할 수 있는 IaC 도구
+ - Host 구성
+ - 프로그램 언어에 익숙하지 않은 사용자도 충분히 사용할 수 있음
+ - 소규모부터 엔터프라이즈급까지 다양한 환경에서 사용이 가능함
+ - 별도의 에이전트 없이 호스트들을 관리함
+
+제어 노드 (Control node)
+ - Ansible로 관리노드(Managed node)를 관리하기 위한 호스트
+ - Ansible이 설치되면 ansible 명령을 통해 각 관리노드를 관리함
+ - Linux, Windows 등의 운영체제가 설치된 호스트를 관리할 수 있음(단, 제어 노드는 반드시 리눅스 호스트여야 함)
+
+관리노드 (Managed node)
+ - Ansible 제어 노드에 의해 관리되는 호스트
+ - Linux, Windows 운영체제를 관리할 수 있음
+ - 관리 노드(Managed node) 에는 별도로 에이전트가 설치되지 않음
+ - Windows가 설치된 관리 노드는 WinRM이 설치 되어있어야 함
+
+인벤토리(Inventory)
+ - 관리 노드(Managed node)의 목록이 담긴 파일
+ 
+플러그인(Plugin)
+ - Ansible의 핵심 기능을 확장하기 위한 프로그램
+
+모듈(Module)
+ - Ansible을 실행하는 python 코드 단위
+ - 호스트에 패키지 설치/업데이트/제거
+ - 시스템 명령어 실행, 파일 복사, 파일 내용 변경 등의 작업이 가능함
+
+작업(Task)
+ - Ansible의 실행단위
+
+Ad-hoc 명령
+ - ansible 명령을 이용하여 단일성 작업을 실해하는 명령
+
+
+플레이(Play)
+ - 특정 관리 노드(Managed node)를 대상으로 한 순서가 있는 작업의 목록
+
+플레이북(Playbook)
+ - 하나 이상의 플레이를 담고 있는 파일(YAML)
+ - ansible-playbook 명령어를 사용하여 플레이북을 실행
+
+-------------------------------
+
+Ansible 기본
+Playbook
+변수
+작업제어
+
+https://docs.ansible.com/ansible/latest/collections/index_module.html
+
+[defaults]: Ansible 실행에 필요한 기본 환경변수 정의
+inventory: inventory 경로 지정
+remote_user: Ansible로 Managed node 접속시 사용자의 권한을 지정하기 위한 사용자
+ask_pass: SSH 접속시 인증 방식을 패스워드(yes)/키기반(no) 인증 중 결정
+
+[privilege_escalation]: 권한 상승(사용자 전환)에 필요한 환경 변수 정의
+become: 권한 상승(사용자 전환) 여부를 결정 true/false
+become_user: 권한 상승 (사용자 전환)을 수행할 대상 사용자(일반적으로 root)
+become_method: 권한 상승(사용자 전환) 방식 정의 (기본값: sudo)
+become_ask_pass: 권한 상승(사용자 전환)시 패스워드를 물어볼지 여부를 지정
+
+Ad-Hoc 명령어
+
+ ansible [pattern] -m MODULE [-a MODULE_ARG]
+
+Ansible Playbook
+
+ 
+
+
