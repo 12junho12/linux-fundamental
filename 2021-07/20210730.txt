@@ -1,0 +1,65 @@
+변수(Variables)
+ - 기본 변수
+ - 목록 변수
+ - 사전 변수
+
+변수의 사용 범위
+ - 전역/플레이북 : ansble.cfg , 명령어 실행시 옵션으로 전달하는 변수
+ - 호스트 그룹 : 
+ - 호스트 : 
+ - 플레이(Play) : vars, vars_files
+ - 블록
+ - 작업(task)
+
+Ansible Facts
+ - Ansible로 관리되는 관리 노드의 정보(OS, NIC, IP주소, 디스크, CPU, 환경변수, 파일시스템 마운트 등)를 수집하여 저장하는 특수한 변수
+ - Play 실행시 가장 먼저 Ansible Facts를 수집하며, gather_facts 로 수집여부를 결정함
+
+
+자주 사용되는 Ansible Facts
+ansible_facts['hostname'] : short hostname
+ansible_facts['fqdn'] : FQDN hostname
+ansible_facts['default_ipv4']['address']
+ansible_facts['enp0s8']['ipv4']['address'] : 특정 NIC의 IP주소
+ansible_facts['interfaces'] : 시스템에 설치된 NIC
+ansible_facts['kernel']
+ansible_facts['distribution']
+ansible_facts['os_family'] : 운영체제 계열
+
+/etc/ansible/facts.d
+
+------
+제어문
+ - 프로그램에서 동작 흐름을 제어하기 위한 특수한 구문 조건비교문, 반복문이 있음
+
+반복문
+ - 동일한 코드를 여러번 수행해야 하는 경우 사용하는 제어문
+ - loop 문, with_*
+
+조건문
+ - 조건식의 참 거짓에 따라 실행여부를 결정하는 제어문
+ - when 문
+
+A == B    :  같음
+A == "B" :   같음
+A > B    :
+A < B    :
+A >= B    :
+A <= B    :
+A is defined  :  변수가 정의되었음
+A is not defined  : 변수가 정의 되지 않음
+
+
+ansible_facts['memory_mb']['real']['total']
+(=  ansible_memory_mb.real.total  )
+
+------
+블록(Block)
+  - 작업 내용을 논리적으로 나누기 위해 사용하는 단위
+  - 작업 내용을 논리적으로 그룹화 하기 위하여 사용함
+  - 작업 수행시 오류가 발생시 해당 부분만 처리를 할 수 있음
+
+
+핸들러(Handler)
+ - 작업 실행시 시스템에 변경사항(changed)이 발생하고 통지(notify)하는 경우 실행되는 작업의 모임
+ - 작업이 실행되어 시스템에 변경사항이 적용된 이후 실행되어야 하는 작업을 실행하고자 할 때 사용
