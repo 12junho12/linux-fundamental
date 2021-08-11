@@ -1,0 +1,155 @@
+﻿가상화(Virtualization)
+(1) 서버 가상화
+   - 물리적인 머신(하드웨어) 자체를 가상화하여 가상머신을 생성하고 관리하는 가상화 기술
+
+(2) 네트워크 가상화
+   - 물리적인 네트워크를 가상화하는 기술
+
+(3) 스토리지 가상화
+   - 여러개의 디스크를 하나의 논리적인 디스크 처럼 사용할 수 있도록 하는 기술
+
+(4) 컨테이너 가상화
+   - OS에서 논리적인 구획을 만들고 컨테이너 간 독립적으로 애플리케이션을 실행할 수 있는 환경을 제공하는 가상화 기술
+   - Kernel을 Host OS와 공유
+
+Solaris Container
+
+Linux Container(LXC)
+ namespace : 시스템의 리소스를 격리를 제공하는 리눅스 커널의 기능
+ cgroups : 프로세스를 그룹 단위로 관리할 수 있는 기술
+
+Docker
+ - 컨테이너를 실행할 수 있는 실행 환경
+ - 컨테이너 이미지 생성, 배포하기 용이한 환경을 제공함
+
+Docker 장점
+ - 서버를 코드 형태로 정의할 수 있음
+ - 이식성
+ - 상호 운용성
+
+Docker 용어
+
+컨테이너 이미지
+ - 컨테이너에서 애플리케이션이 실행되기 위한 실행환경을 구성하는 Application, Data, Library 등의 모임
+ - 실행되지 않은 컨테이너의 원본
+
+컨테이너
+ - 컨테이너 이미지를 실행한 형태
+ - 컨테이너 이미지가 메모리에 로드된 상태
+
+저장소(Registry)
+ - 컨테이너 이미지를 공유하기 위한 저장 공간
+
+레포지토리(Repository)
+ - 컨테이너 이미지를 공유하기 위해 저장소(Registry) 내에 생성하는 저장 공간
+ - 애플리케이션의 다양한 이미지 버전을 포함함
+
+
+Docker 명령어
+
+도커 컨테이너 이미지 검색
+$ docker search  이미지
+
+도커 컨테이너 이미지 다운로드(PULL)
+$ docker image pull 이미지[:태그]
+
+도커 컨테이너 이미지 목록
+$ docker images
+
+도커 컨테이너 목록(실행중인 컨테이너)
+$ docker container ls
+
+도커 컨테이너 목록(종료되거나 실행중이지 않은 컨테이너)
+$ docker container ls -a
+
+도커 컨테이너 생성(컨테이너를 실행은 하지 않음)
+$ docker container create
+
+도커 컨테이너 실행(이미 존재하는 컨테이너)
+$ docker container start
+
+도커 컨테이너 실행(컨테이너가 존재하지 않는 경우)
+$ docker container run  
+
+Docker Container 실행
+ Foreground 실행( -i -t )
+   - 표준 입출력 가능
+ Background 실행( -d -t )
+   - 표준 입력 전달 불가
+
+컨테이너 내부 진입(attach)
+$ docker container attach
+
+컨테이너에 새로운 프로세스 실행
+$ docker container exec
+ Bash Shell 실행
+  $ docker container exec -i -t --name CONTAINER /bin/bash
+
+Docker 컨테이너 CPU, RAM 등 사용량 확인
+$ docker container stats
+
+Docker 컨테이너 프로세스 정보
+$ docker container top
+
+Docker에서 사용하는 디스크 용량 확인
+$ docker system df
+
+Docker 실행 환경 확인
+$ docker system info
+
+Docker 버전 정보 확인
+$ docker version
+
+Docker 컨테이너에 파일/디렉터리 복사
+$ docker container cp SRC DEST
+ (1) Host Machine의 파일을 Docker Container 내로 복사
+  $ docker container cp /tmp/test.txt  CONTAINER:/tmp/test.txt
+
+ (2) Docker Container의 파일을 Docker Host로 복사
+  $ docker container cp CONTAINER:/tmp/test.txt  /tmp/test.txt
+
+Docker 컨테이너 파일 변화 확인
+$ docker container diff CONTAINER
+
+ A : 파일이 추가됨
+ C : 파일이 변경됨
+ D : 파일이 삭제됨
+
+Docker 컨테이너 일시정지
+$ docker container pause CONTAINER
+
+Docker 컨테이너 일시정지 해제
+$ docker container unpause CONTAINER
+
+
+------
+Docker Container network
+
+Bridge network
+ 컨테이너가 사용하는 Private Network
+ 같은 네트워크에 속한 컨테이너 끼리 가능하고 외부 네트워크와 통신할 수 있도록 연결되어있음
+
+Host network
+ Docker Host의 네트워크 정보를 공유하여 사용하는 방법
+ 사용하고자 하는 포트가 호스트와 충돌되지 않아야 함
+
+null network
+ 컨테이너에 대한 네트워크를 사용하지 않음
+
+Overlay network
+ 서로 다른 Docker Host에 연결해서 서로 통신할 수 있도록 하는 네트워크
+
+macvlan network
+ MAC address를 컨테이너에 할당하여 docker Daemon이 트래픽을 컨테이너의 MAC 주소로 라우팅할 수 있도록 지원하는 네트워크
+
+
+
+
+
+
+
+
+
+
+
+
