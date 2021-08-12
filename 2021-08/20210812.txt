@@ -1,0 +1,90 @@
+﻿도커 컨테이너 네트워크
+
+네트워크 종류
+Bridge network
+ 컨테이너의 별도의 네트워크로 외부 네트워크와 통신이 가능함
+ 별도의 네트워크 설정이 없는 경우 컨테이너의 기본 네트워크로 지정됨
+
+Host network
+ Docker Host의 네트워크를 공유하는 네트워크(IP주소, Hostname, Port)
+
+Null network(none)
+ 컨테이너에서 네트워크를 사용하지 않음(단독)
+
+Overlay network
+ 서로 다른 Docker Host 간의 네트워크
+
+macvlan network
+ MAC address를 컨테이너에 할당하여 Docker Daemon의 트래픽을 MAC address를 기반으로 전달받도록 지원하는 네트워크
+
+
+컨테이너 링크
+docker container -i -t --link TARGET_CONTAINER --name CONTAINER IMAGE
+
+
+컨테이너 포트포워딩
+
+docker container create -i -t  -p HOST_PORT:CONTAINER_PORT --name CONTAINER IMAGE
+
+
+도커 컨테이너 데이터 스토리지 제공
+
+(1) Bind Mount
+  Docker Host의 File System 내의 특정 디렉터리 공간을 컨테이너에게 제공하는 방식
+
+(2) Volume
+  Docker가 관리하는 스토리지 공간으로 Docker 명령어에 의해 관리됨
+
+----
+도커 컨테이너 이미지 작성
+(1) 도커 컨테이너로 부터 도커 컨테이너 이미지 생성
+
+docker commit CONTAINER IMAGE
+
+(2) Dockerfile 작성 후 도커 컨테이너 이미지 빌드
+
+mkdir IMAGE
+cd IMAGE
+vim Dockerfile
+docker build --tag REPOSITORY:TAG PATH
+
+* --no-cache : 컨테이너 이미지 생성시 기존 작업 이미지 캐시를 사용하지 않음
+
+Dockerfile에 작성하는 명령
+FROM
+ - 컨테이너 이미지 작성시 기본이 되는 컨테이너 이미지 지정
+ FROM  REPO
+ FROM  REPO:TAG
+
+RUN
+ - 컨테이너 이미지 빌드시 실행할 명령어
+ RUN  COMMAND
+
+CMD
+ - 컨테이너 실행시 실행할 명령어
+ CMD  COMMAND
+
+LABEL
+ - 컨테이너 이미지에 대한 설명(레이블) 작성
+ LABEL  TEXT
+
+EXPOSE
+ - 컨테이너에서 외부에 노출할 포트 지정
+ EXPOSE  PORT
+
+ENV
+ - 컨테이너의 환경변수 지정
+ ENV  VARIABLE=VALUE
+
+COPY
+ - Docker Host의 파일을 컨테이너 이미지로 복사하는 명령
+  COPY  DOCKER_HOST_PATH  CONTAINER_PATH
+
+ADD
+ - Docker Host의 파일을 컨테이너 이미지로 복사하는 명령
+  ADD  DOCKER_HOST_PATH  CONTAINER_PATH
+
+ENTRYPOINT
+ - 컨테이너 실행시 기본 동작할 명령어 지정
+ ENTRYPOINT  COMMAND
+
