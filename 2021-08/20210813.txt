@@ -1,0 +1,203 @@
+
+
+도커 컨테이너 이미지 작성
+(1) 도커 컨테이너로부터 컨테이너 이미지 작성
+
+docker container commit CONTAINER IMAGE
+
+(2) Dockerfile 작성 후 도커 컨테이너 이미지 빌드
+
+1. Dockerfile 작성
+2. docker image build  --tag  REPO:TAG  PATH
+
+
+Dockerfile 명령어
+
+FROM
+ - 컨테이너 이미지 작성시 베이스 컨테이너 이미지 지정
+
+ FROM REPO
+ FROM REPO:TAG
+
+RUN
+ - 컨테이너 이미지 빌드 시점에 실행할 작업
+ RUN COMMAND
+
+LABEL
+ - 컨테이너 이미지에 대한 정보를 기록
+ LABEL LABEL_NAME=TEXT
+
+EXPOSE
+ - 컨테이너에서 외부로 노출하고자 하는 포트 지정
+ EXPOSE PORT
+ EXPOSE 80
+
+ENV
+ - 컨테이너 이미지 애플리케이션 실행에 필요한 환경변수 지정
+ ENV  VAR1=VALUE
+
+COPY
+ - Docker Host의 파일을 컨테이너로 복사하는 명령어
+ COPY  DOCKER_HOST_PATH  CONTAINER_PATH
+
+ADD
+ - Docker Host의 파일을 컨테이너로 복사하는 명령어
+ ADD  DOCKER_HOST_PATH  CONTAINER_PATH
+
+ENTRYPOINT
+  - 컨테이너 실행 시점에서 기본 동작을 위한 실행할 작업
+  ENTRYPOINT COMMAND
+
+CMD
+ - 컨테이너 생성 후 실행 시점에 실행할 작업
+  CMD COMMAND
+
+VOLUME
+ - 컨테이너 이미지에 볼륨 마운트를 할당
+  VOLUME  PATH
+  VOLUME ["VOLUME_PATH1", "VOLUME_PATH2"]
+
+USER
+ - 컨테이너의 애플리케이션을 실행할 사용자 지정
+ - USER 명령어로 지정할 사용자가 미리 추가되어있어야 함
+  USER  USERNAME 
+
+WORKDIR
+ - 컨테이너의 작업 디렉터리를 지정하는 명령
+ WORKDIR  CONTAINER_PATH
+
+ARG
+ - 컨테이너 이미 빌드 시점에서 빌드에 사용할 Argument
+ - $ docker image build  --tag REPO:TAG  --build-args ARG1=VALUE  .
+ ARG  ARG1
+ ARG  ARG1=value
+
+ONBUILD
+ - 컨테이너 이미지 빌드 완료 후 실행할 작업을 지정하는 명령어
+ ONBUILD  COMMAND 
+
+STOPSIGNAL
+ - 컨테이너를 종료할 때 사용할 시그널을 지정
+ STOPSIGNAL  SIG
+
+HEALTHCHECK
+ - 컨테이너의 애플리케이션이 정상 동작하는지 체크할 때 사용하는 명령어
+ HEALTHCHECK  [OPTION]  CMD  COMMAND
+ 
+ 옵션
+   --interval=n      (seconds)      HEALTHCHECK 주기 지정 (Default : 30 seconds)
+   --timeout=n      (seconds)     HEALTHCHECK 타임아웃   (Default : 30 seconds)
+   --retries=n        (count)         HEALTHCHECK 재시도 횟수 (Default : 3)
+
+SHELL
+ - 컨테이너에서 실행할 기본 쉘 지정 (Default : /bin/sh)
+   SHELL ["SHELL_PATH", "PARAMETER"]
+   SHELL ["/bin/bash", "-c"]
+
+
+https://1drv.ms/f/s!ArU4hcg6hoPLlxf4butqiJfMcEOX
+
+
+멀티 스테이지 빌드 (p.162)
+ - 애플리케이션의 빌드 환경 및 실행 환경을 지원하기 위해 컨테이너의 이미지의 사이즈가 지나치게 커지는 것을 피하기 위한 빌드 기법
+ - 하나의 Dockerfile 파일에 여러 Dockerfile 내용을 포함한다.
+
+
+------
+사설 레지스트리 구성(Private Registry)
+1. Docker의 registry 
+
+<레지스트리 구성>
+docker image pull registry
+docker container run -d -p 5000:5000 --name registry registry:latest
+
+<이미지 태그 지정, 삭제 및 업로드 테스트>
+docker images
+docker image tag ORIGINAL_REPO:TAG  localhost:5000/REPO:TAG
+docker image push  localhost:5000/REPO:TAG
+
+docker image rm ORIGINAL_REPO:TAG
+docker image rm localhost:5000/REPO:TAG
+
+docker image pull  localhost:5000/REPO:TAG
+
+curl -X GET http://localhost:5000/v2/_catalog
+{"repositories":["basic2","busybox","centos"]}
+
+curl -X GET http://localhost:5000/v2/centos/tags/list
+{"name":"centos","tags":["7"]}
+
+docker container stop registry
+docker container rm registry
+
+
+2. Harbor
+
+Docker-Compose
+  Docker Host에 있는 복수의 Docker Container를 한번에 제어할 수 있는 Docker Contianer 도구
+
+=== <Docker Compose 설치> ===
+sudo wget "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64" -O /usr/local/bin/docker-compose
+
+sudo chmod +x /usr/local/bin/docker-compose
+
+docker-compose --version
+
+sudo docker-compose --version
+
+sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+=======
+
+sudo yum install git -y
+
+wget https://github.com/goharbor/harbor/releases/download/v2.3.1/harbor-offline-installer-v2.3.1.tgz
+
+tar xvzf harbor-offline-installer-v2.3.1.tgz
+
+cd harbor
+
+cp harbor.yml.tmpl harbor.yml 
+vim harbor.yml
+===
+hostname: 192.168.56.100
+
+# http related config
+http:
+  # port for http, default is 80. If https enabled, this port will redirect to https port
+  port: 80
+
+# https related config
+##https:
+  # https port for harbor, default is 443
+##  port: 443
+  # The path of cert and key files for nginx
+##  certificate: /your/certificate/path
+##  private_key: /your/private/key/path
+
+===
+
+sudo ./install.sh
+
+sudo vi /etc/docker/daemon.json
+===
+{
+    "insecure-registries": ["192.168.56.100"]
+}
+==== 
+
+sudo systemctl restart docker.service
+
+
+docker login 192.168.56.100
+username: admin
+password: Harbor12345
+
+docker images
+docker image tag ORIGINAL_REPO:TAG  192.168.56.100/library/REPO:TAG
+docker image push  192.168.56.100/library/REPO:TAG
+
+docker image rm ORIGINAL_REPO:TAG
+docker image rm 192.168.56.100/library/REPO:TAG
+
+docker image pull  192.168.56.100/library/REPO:TAG
