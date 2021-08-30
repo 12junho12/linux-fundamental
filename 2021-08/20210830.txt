@@ -1,0 +1,166 @@
+﻿Controller
+  파드(Pod)의 정상 동작을 위하여 특정 상태를 보장하는 오브젝트
+
+ReplicationController
+ 일정 갯수만큼의 파드(Pod)가 복제되어 동작하는 것을 보장하는 컨트롤러
+
+ReplicationController 목록 확인
+kubectl get replicationcontrollers
+
+ReplicationController 자세한 정보 확인
+kubectl describe replicationcontrollers REPLICATION_CONTROLLER
+
+ReplicationController의 파드(Pod) 스케일링
+kubectl scale replicationcontrollers REPLICATION_CONTROLLER --replicas N
+
+
+ReplicaSet
+  ReplicationController와 유사한 Controller
+  ReplicationController가 일치성 기반의 Label Selector만 지원했던 것과 달리 집합성 기반의 Label Selector도 지원함
+
+ReplicaSet의 Label Selector
+ - matchLabels
+     ReplicationController의 Label Selector와 동일한 동작을 수행(Label 일치)
+     key: value
+
+ - matchExpressions
+     집합성 기반의 Label Selector
+     key
+     value
+     operator    - 연산자
+       In  - 레이블의 키와 값이 지정된 값으로 일치해야함
+       NotIn  - 레이블의 키와 값이 지정된 값과 일치하지 않아야함
+       Exists  - 레이블의 키가 포함됨
+       DoesNotExist  - 레이블의 키가 포함되지 않음
+
+DaemonSet
+ 노드 레이블 미지정시 Cluster의 모든 노드에 파드(Pod)를 한개씩 실행함
+ 노드 레이블 지정시 해당 노드레이블이 있는 노드에 파드(Pod)를 한개씩 실행함
+
+
+Job
+  파드(Pod)의 애플리케이션이 실행되고 정상 종료되는 것에 초점을 맞춘 컨트롤러
+  앞서 살펴본 컨트롤러와 달리 애플리케이션 실행을 마치면 정상종료하도록 함
+
+CronJob
+
+---------------
+네트워크
+
+전통적인 네트워크와 Kubernetes 네트워크의 차이점
+ 파드(Pod)는 일회성으로 동작하며 언제든지 제거될 수 있음
+ 특정 노드에 파드(Pod)가 스케쥴 되고 IP 주소가 동적으로 할당되어 클라이언트가 IP주소를 예측할 수 없음
+ 분산 아키택처 및 수평적 스케일링의 경우 같은 애플리케이션을 복수의 파드(Pod)가 제공함
+
+
+
+
+Cluster 내부 네트워크
+
+서비스
+ Kubernetes에서 애플리케이션을 실행하고 있는 컨트롤러의 파드 그룹에 대한 단일 네트워크 진입점을 제공하는 오브젝트
+ 별도의 종료 전까지는 부여된 IP주소가 변경되지 않음
+ Label Selector를 이용하여 서비스 대상 파드를 관리하며 서비스에 선택된 파드의 목록은 엔트포인트가 관리함
+
+서비스 생성(명령어)
+kubectl expose CONTROLLER_TYPE CONTROLLER_NAME --name SERVICE_NAME
+
+서비스 생성(Manifest 작성)
+vim SERVICE.yaml
+kubectl create -f SERVICE.yaml
+
+====
+apiVersion: v1
+kind: Service
+metadata:
+  name: SERVICE_NAME
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    LABEL_KEY: LABEL_VALUE
+====
+
+서비스 종류
+ *ClusterIP
+ NodePort
+ LoadBalancer
+
+서비스(기본 형태)
+
+SessionAffinity
+ Client의 요청을 매번 동일한 파드(Pod)에서 처리하고자 할 때 사용
+
+서비스(다중 포트)
+
+서비스(named port)
+ Controller/Pod의 Manifest의 포트 항목에서 포트에 이름을 지정하여 (서비스 Manifest에서) 이름으로 포트 번호(targetPort)를 참조
+
+- - -
+서비스 탐색(Service Discovery)
+
+(1) 환경 변수를 이용한 서비스 탐색(Service Discovery)
+ {SERVICE_NAME}_SERVICE_HOST={SERVICE_IP}
+ {SERVICE_NAME}_SERVICE_PORT={SERVICE_PORT}
+ {SERVICE_NAME}_PORT={PROTOCOL}://{SERVICE_IP}:{SERVICE_PORT}
+ {SERVICE_NAME}_PORT_{PORT_NUMBER}_{PROTOCOL}_ADDR={PROTOCOL}://{SERVICE_IP}:{SERVICE_PORT}
+ {SERVICE_NAME}_PORT_{PORT_NUMBER}_{PROTOCOL}_PORT={SERVICE_PORT}
+ {SERVICE_NAME}_PORT_{PORT_NUMBER}_{PROTOCOL}_PROTO={PROTOCOL}
+
+
+(2) Kubernetes Cluster의 내부 DNS를 이용한 서비스 탐색(Service Discovery)
+
+Kubernetes Cluster의 내부 DNS(kube-dns) 확인
+kubectl get all -n kube-system -l k8s-app=kube-dns
+
+
+$ kubectl run nettool -it --image devops2341/network-multitool:v1 --rm bash
+
+  FQDN을 통한 서비스 탐색
+    myapp-svc
+    myapp-svc.default
+    myapp-svc.default.svc
+    myapp-svc.default.svc.cluster.local
+
+  Kubernetes Cluster의 FQDN 형태
+    SERVICE_NAME.NAMESPACE.svc.cluster.local
+    SERVICE_NAME.NAMESPACE.K8S_OBJECT_TYPE.CLUSTER_DOMAIN
+
+- - -
+Cluster 외부 네트워크
+
+서비스 종류
+ - ClusterIP
+   - Kubernetes Cluster 내부 서비스
+
+ - NodePort
+   - NodePort + ClusterIP
+   - Kubernetes Cluster의 모든 노드에 외부 접근용 포트를 할당하는 서비스
+   - 노드의 Port를 사용하여 Kubernetes Cluster 외부에서 접근이 가능함
+   - 노드의 Port로 접근하면 Service에 의해 파드(Pod)로 리다이렉션 됨
+   - 파드(Pod)를 실행하고 있지 않은 노드에도 포트가 할당되며 접근이 가능함
+
+ - LoadBalancer
+   - LoadBalancer + NodePort + ClusterIP
+   - NodePort의 확장된 개념으로 Kubernetes Cluster 외부의 LoadBalancer를 이용하여 외부에서 접근 가능하도록 하는 서비스
+   - 외부의 LoadBalacer로 접근시 서비스를 통해 파드(Pod)로 리다이렉션을 함
+   - CSP(AWS, GCP, Azure 등)에서 지원하며 Onpremise 환경 사용시에는 metallb를 사용하여 LoadBalancer 타입의 서비스 오브젝트를 사용할 수 있음
+
+
+
+인그레스
+
+
+
+
+
+
+
+
+
+
+
+
+
+
