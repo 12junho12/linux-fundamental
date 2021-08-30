@@ -1,0 +1,116 @@
+﻿컨트롤러(Controller)
+  파드(Pod)를 정상적으로 동작시키기 위하여 특정 상태를 보장하는 역할을 수행하는 오브젝트
+
+Replication Controller
+ 파드(Pod)가 일정 개수만큼 복제되어 동작하는 것을 보장하는 컨트롤러
+
+Replication Controller 사용을 위한 요소
+ - 파드(Pod)를 지정하기 위한 Label Selector
+ - 파드(Pod) 복제본을 위한 파드 템플릿
+ - 파드(Pod) 복제본의 갯수
+
+Replication Controller 목록 확인
+kubectl get replicationcontrollers 
+
+Replication Controller 자세한 정보 확인
+kubectl describe replicationcontrollers
+
+Replication Controller의 파드(Pod) Scaling
+kubectl scale replicationcontrollers REPLICATION_CONTROLLER --replicas N
+
+
+Relicaset
+ Replication Controller와 같이 일정 개수의 파드의 동작을 보장하는 컨트롤러
+ Replication Controller가 일치성 기반의 Label Selector만을 지원했던 것과 달리 집합성 기준의 Label Selector도 지원함
+
+ReplicaSet의 Label Selector
+ - matchLabels
+     Replication Controller의 Label Selector와 동일한 동작을 수행하는 Label Selector
+
+===
+...
+spec:
+  selector:
+    matchLabels:
+      key: value
+...
+===
+ - matchExpressions
+     집합성 기반의 Label Selector
+    key : 선택한 레이블의 키 이름 지정
+    values: 선택한 레이블의 값 지정
+    operator : 연산자
+       In : 레이블의 키와 값이 지정된 값으로 일치해야함
+       NotIn : 레이블의 키와 값이 지정된 값과 일치하지 않아야 함
+       Exists : 레이블의 키가 포함되어야 함
+       DoesNotExist : 레이블의 키가 포함되지 않음
+
+===
+...
+spec:
+  selector:
+    matchExpressions:
+    - key:  KEY
+      operators: OPERATOR
+      values:
+      - VLAUE
+...
+===
+
+ReplicaSet 목록 확인
+kubectl get replicasets.apps
+
+ReplicaSet 상세 정보 확인
+kubectl describe replicasets.apps REPLICASET
+
+---
+DaemonSet
+ 노드 레이블 지정시 노드 레이블이 매치되는 모든 노드에 파드를 한개씩 배치함
+ 별도의 노드 레이블을 지정하지 않은 경우에는 Cluster의 모든 노드에 파드를 한개씩 배치함
+ ReplicationController 및 ReplicaSet과 유사하나 별도로 복제본의 갯수를 지정하지 않음
+ Cluster에 노드가 추가되는 경우 자동으로 파드(Pod)를 배치함
+
+DaemonSet 목록 확인 명령어
+kubectl get daemonset 
+
+DeamonSet 배치 노드 확인(레이블 확인)
+kubectl get nodes --show-labels
+
+노드에 레이블 지정
+kubectl label nodes NODE LABEL_KEY=LABEL_VALUE
+
+노드에서 레이블 제거
+kubectl label nodes NODE LABEL_KEY-
+
+----
+Job
+  파드(Pod)의 애플리케이션이 실행되고 정상적으로 종료되는 것에 초첨이 맞춰진 컨트롤러
+  파드(Pod)의 애플리케이션의 실행을 마치면 파드(Pod)는 정상 종료됨
+
+Job 목록 확인
+kubectl get jobs
+
+Job 상세 정보 확인
+kubectl describe jobs JOB
+
+parallelism    : 동시에 병렬 처리할 파드(Pod)의 갯수
+completions  : Job 완료를 위한 정상 종료된 파드(Pod)의 갯수
+
+
+Cron Job
+  파드의(Pod)의 애플리케이션이 주기적으로 실행되도록 하는 컨트롤러
+
+Cron Job 목록 확인
+kubectl get cronjobs
+
+Cron Job 상세 정보 확인
+kubectl describe cronjobs CRONJOB
+
+------
+
+
+
+
+
+
+

@@ -1,0 +1,187 @@
+﻿공유 링크 : 
+https://1drv.ms/f/s!ArU4hcg6hoPLlxf4butqiJfMcEOX
+
+---
+레이블(Label)
+ Kubernetes Cluster에서 Object를 식별하여 속성을 지정할 때 사용
+
+Pod 목록 확인(레이블)
+kubectl get pods --show-labels
+
+레이블 지정(명령어)
+kubectl label OBJECT OBJECT_NAME LABEL
+
+레이블 변경(명령어)
+kubectl label OBJECT OBJECT_NAME LABEL --overwrite
+
+
+레이블 셀렉터
+  오브젝트에 할당된 레이블 식별 및 검색
+
+  연산자
+    =
+    ==
+    !=
+    in
+    notin
+
+특정 키가 있는 레이블 지정
+kubectl get pods --show-labels -l 'app'
+
+----
+어노테이션(Annotation)
+ 오브젝트에 비식별 메타데이터를 지정함
+ 검색할 수 없음
+
+어노테이션 지정(명령어)
+kubectl annotate pod POD_NAME  ANNOTAION
+
+
+----
+네임스페이스(Namespace)
+ Kubernetes Cluster를 논리적으로 나눠주는 논리적 파티션
+
+네임스페이스 목록 확인
+kubectl get namespaces
+
+네임스페이스 생성
+kubectl create namespace NAMSPACE
+
+네임스페이스 지정하여 Pod 생성
+kubectl create -f POD.yaml -n NAMESPACE
+
+네임스페이스 지정하여 Pod 목록 확인
+kubectl get pods -n NAMESPACE
+
+----
+파드(Pod)의 Life Cycle 및 Probe
+
+파드(Pod)의 Life Cycle
+ Pending -> Running -> Succeeded or Failed
+
+파드(Pod)의 실행 단계
+  Pending
+    파드가 클러스터에서 승인되었으나 실행 단계가 되지 않은 상태
+    파드가 스케쥴링이 되기 이전
+
+  Running
+    파드가 노드에 할당되어 실행
+    하나이상의 컨테이너가 실행되어야 함
+
+  Succeeded
+    모든 컨테이너가 정상종료 된 상태
+
+  Failed
+    모든 컨테이너가 종료된 상태
+    하나 이상의 컨테이너가 비정상적으로 종료된 상태
+
+  Unknown
+   알수 없는 상태
+
+컨테이너의 상태
+  Waiting
+    컨테이너가 Running 상태나 Terminated 가 아닌 상태
+  Running
+    컨테이너가 문제 없이 실행 중인 상태
+  Terminated
+    컨테이너의 실행이 완료된 상태
+    
+컨테이너 재시작 정책(restartPolicy)
+  Always : (Default) 종료/실패시 항상 재시작
+  Onfailure : 실패시 재시작
+  Never : 재시작하지 않음
+
+컨테이너 프로브(Container Probe)
+ 컨테이너의 동작 상태를 감시
+ kubelet이 Probe Handler를 호출하여 컨테이너 상태를 감시
+
+Probe Handler의 Probe 방식
+ HTTPGetAction : HTTP GET 메서드로 특정 경로의 웹 리소스 요청
+ TCPSocketAction : TCP Socket 통신을 사용하여 특정 Port로 연결 시도
+ ExecAction : 컨테이너 내의 특정 실행 바이너리를 싱행하여 정상 종료되는지 여부 확인
+
+ProbeHandler의 상태
+ Success
+ Failure
+ Unknown
+
+컨테이너 프로브 종류(Container Probe Types)
+ - livenessProbe
+     컨테이너 애플리케이션이 정상 동작 중인지를 확인
+     진단에 실패하게 되면 재시작 정책을 적용함
+
+ - readinessProbe
+     컨테이너 애플리케이션이 요청을 처리할 준비가 되었는지 확인
+     진단에 실패하면 엔드포인트 컨트롤러가 Pod의 IP주소를 Endpoint에서 제거함
+
+ - startupProbe
+     컨테이너의 애플리케이션이 시작되었는지를 확인
+     startupProbe가 선언된 경우 startupProbe를 통과하기 전에는 다른 Probe를 활성화하지 않음
+
+
+-----
+컨트롤러(Controller)
+  파드(Pod)를 올바르게 동작시키기 위해 특정 상태를 보장하는 역할을 수행하는 오브젝트
+
+
+Replication Controller
+  파드(Pod)가 특정 개수만큼 복제되어 동작하는 보장하는 컨트롤러
+
+Replication Controller 구성을 위한 요소
+ - 파드(Pod)를 지정하기 위한 Label Selector
+ - 새로운 파드(Pod)의 복제본을 생성하기 위한 파드 템플릿
+ - 파드의 복제본 갯수
+
+Replication Controller의 장점
+ - 원하는 파드의 복제본 갯수만큼 실행되지 않았을 경우 파드 템플릿을 활용하여 파드를 생성함
+ - 노드에 장애 발생시 장애가 발생한 노드에서 실행중이던 파드를 다른 노드에서 실행되도록 복제본을 생성함
+ - 수동/자동으로 파드를 수평적 스케일링이 가능함
+
+
+Replication Controller 목록 확인
+kubectl get replicationcontrollers 
+
+Replication Controller 자세한 정보 확인
+kubectl describe replicationcontrollers REPLICATION_CONTROLLER
+
+Pod 목록 확인
+kubectl get pods
+
+Pod 목록 확인(레이블)
+kubectl get pods --show-labels
+
+Replication Controller의 Pod 삭제 후 변화 확인
+kubectl delete pods myapp-rc-wj5c2
+kubectl get pods
+kubectl describe pods myapp-rc-d5xkh
+kubectl describe replicationcontrollers myapp-rc
+
+Replication Controller의 Pod의 Label 변경 후 확인
+kubectl get pods --show-labels
+kubectl label pod myapp-rc-hxfjn app=myapp-test --overwrite
+kubectl get pods --show-labels
+
+Replication Controller의 Scaling
+kubectl scale replicationcontrollers myapp-rc --replicas 4
+kubectl get pods --show-labels
+kubectl describe replicationcontrollers myapp-rc
+
+
+
+Replicaset
+
+Deamonset
+
+
+
+
+
+
+
+
+
+
+
+
+
+
