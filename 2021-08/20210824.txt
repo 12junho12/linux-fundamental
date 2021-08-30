@@ -1,0 +1,215 @@
+﻿Kubernetes
+ 구글의 Borg 프로젝트로 부터 시작되었으며 Kubernetes 라는 이름으로 CNCF 재단에 기증함
+ 컨테이너를 다수의 노드에서 실행할 수 있는 클러스터
+
+Kubernetes 제공 기능
+ - Container Platform
+ - Microservice Platform
+ - Migration이 용이한 Cloud Platform
+
+Kubernetes Architecture
+
+Control Plane
+  Kubernetes Cluster를 제어하는 메인 서버
+
+ API Server
+   Kubernetes 구성요소들이 동작시 API 통신을 사용하여 API 서버와 통신함
+   Kubernetes 구성요소를 관리 감독하는 역할을 수행함
+
+ Key-Value Storage (etcd)
+   Kubernetes 상태 정보를 저장하는 Key-Value Storage로 API Server와 동일한 정보를 가지고 있음
+
+ Scheduler
+  새로 생성되는 파드(Pod)를 감지하고 적절한 노드에 할당함
+
+ Controller Manager
+   API Server를 통해 지속적으로 Kubernetes Cluster를 감시하고 필요한 상태로 이행하는 역할 수행
+
+ - Node Controller  : Node를 관리
+ - Replication  Controller : Replication Controller를 사용하는 모든 Object를 관리
+ - Endpoint Controller  :  Service와 Pod를 연결함
+ - Service Account, Token Controller  :  Kubernetes의 Namespace, 계정, Token을 담당함
+
+ Cloud Controller Manager
+  - Cloud 환경을 지원하기 위한 Controller
+
+Node
+  Kubernetes Cluster에서 컨테이너의 실행 런타임 환경을 제공하고 동작 중인 Pod를 유지하는 역할을 수행
+
+ Kubelet
+  각 노드에 위치하는 에이전트로 Control Plane으로부터 제공 받은 Pod의 구성 정보를 바탕으로 컨테이너의 실행을 관리함
+
+ kube-proxy
+   Host 레벨의 네트워크 규칙을 구성하고 외부 연결과 파드를 연결하는 역할을 수행
+
+  Container Runtime
+    컨테이너를 실행시키는 구성요소
+      Docker
+      containerd
+      CRI-O
+
+Add-on
+ 쿠버네티스 클러스터에 추가할 수 있는 확장 기능을 제공함
+
+ Cluster DNS
+   Kubernetes Cluster 내의 여러 오브젝트(Pod, Container, Service 등)에 대한 DNS 레코드를 제공하여 DNS 주소 기반으로 오브젝트를 찾을 수 있도록 지원
+ Dashboard
+ Container Resource Monitoring
+ Cluster Logging
+
+Kubernetes API
+ Kubernetes Cluster의 모든 구성 요소는 API Server와 메시지를 주고 받으며 동작함
+
+Kubernetes API 버전 종류
+ Alpha Version API
+  실험적인 기능을 포함하는 API 버전
+  버전 이름에 alpha가 포함됨
+  지원이 별도의 공지 없이 중단될 가능성이 있음
+
+ Beta Version API
+  버전 이름에 beta가 포함됨
+  alpha보다 성숙된 API Version
+  다음 버전에서 호환성이 깨지는 형태로 변경될 수 있으나 이전할 수 있는 가이드가 제공됨
+
+  Stable Version API
+   버전 이름이 vX 형태임(X는 정수)
+
+
+Kubernetes API 그룹
+ Kubernetes 에서 기능을 추가할 때 쉽게 확장할 수 있도록 함
+
+ - Core 그룹
+    YAML  -  apiVersion: API_VER
+    HTTP REST API  -  /api/API_VER
+
+ - Core 이외의 그룹
+     YAML  -  apiVersion: GROUP/API_VER
+     HTTP REST API   - /api/GROUP/API_VER
+
+------
+Kubernetes 클러스터 배포 방법
+ - kubeadm을 이용한 수동 배포
+ - Kubespray
+ - KOps
+
+Kubernetes Cluster 구성
+
+Docker CE 설치 - 모든 노드
+ 추가 레포지토리 구성을 위한 사전 패키지 설치
+ Docker CE 레포지토리 구성(gpg key, repository)
+ Docker CE, containerd 패키지 설치
+
+Kubernetes 구성요소 설치(kubeadm, kubelet, kubectl) - 모든 노드
+ Kubernetes 레포지토리 구성(gpg key, repository)
+ kubeadm, kubelet, kubectl 설치(버전 지정, 버전 고정)
+
+Kubernetes Control Plane 초기화 - kube-control1
+ sudo kubeadm init --control-plane-endpoint CONTROL_IP --pod-network-cidr POD_NET --apiserver-advertise-address APISERVER_IP 
+
+kubectl 명령어 구성(인증 Credential 설정)
+mkdir ~/.kube
+sudo cp -i /etc/kubernetes/admin.conf ~/.kube/config
+sudo chown USER:USER ~/.kube/config
+
+Container Network Add-on : Calico - kube-control1
+ kubectl -f apply https://docs.projectcalico.org/manifests/calico.yaml
+
+Kubernetes Cluster에 Node 가입
+ sudo kubeadm join <control-plane-host>:<control-plane-port> --token <token> --discovery-token-ca-cert-hash sha256:<hash>
+
+-----
+
+Kubernetes Cluster 노드 확인
+kubectl get nodes
+
+Kubernetes Cluster 노드 확인 (자세히)
+kubectl get nodes -o wide
+
+Kubernetes Version 확인
+kubectl version
+
+Kubernetes Cluster 정보 확인
+kubectl cluster-info
+
+
+Kubernetes 오브젝트 관리
+ - 명령형 커맨드
+   - kubectl 명령어에 인수나 옵션을 사용하여 애플리케이션을 관리함
+   - 일회성 작업
+   - 개발환경에서 사용하며 가장 단순한 방법
+
+ - 명령형 오브젝트 구성
+   - 오브젝트를 YAML 파일이나 JSON 파일에 정의함
+   - kubectl 명령어에 YAML파일이나 JSON파일을 지정하여 오브젝트를 관리하는 방식
+   - 생성할 오브젝트에 대해 완전한 오브젝트의 정의를 포함해야 함
+
+ - 선언형 오브젝트 구성
+   - 특정 디렉터리에 모든 오브젝트 파일을 배치함
+   - kubectl 명령어는 디렉터리를 인수로 사용하여 오브젝트를 관리함
+
+-----
+LoadBalancer 구성
+
+kubectl create -f https://raw.githubusercontent.com/metallb/metallb/v0.10.2/manifests/namespace.yaml
+
+kubectl create -f https://raw.githubusercontent.com/metallb/metallb/v0.10.2/manifests/metallb.yaml
+
+-----
+파드(Pod)
+ Kubernetes에서 컨테이너를 실행하고 배포할 수 있는 가장 작은 단위
+
+파드 생성
+kubectl create -f POD.yaml
+kubectl create pod POD --image IMAGE
+
+파드 목록 확인
+kubectl get pods
+
+파드 목록 자세히 확인
+kubectl get pods -o wide
+
+파드 자세한 정보 확인
+kubectl describe pod POD
+
+파드 로그 확인
+kubectl logs LOG
+
+동작중인 파드의 Manifest 정보 확인
+kubectl get pods POD -o yaml
+
+파드의 포트포워딩
+kubectl port-forward POD HOST_PORT:CONTAINER_PORT
+ 
+Manifest file 구조
+=====
+apiVersion: v1   # Kubernetes API Version 지정 
+kind: Pod         # 생성할 Kubernetes Object 종류
+metadata:        # Object 정의 내용 (Object 이름)
+  name: my-nginx-pod
+spec:               # Object Spec 정의
+  containers:     # Container 정의
+  - name: my-nginx-container   # Container 이름
+    image: nginx:latest              # Container 이미지
+    ports:                                # Port 정의
+    - containerPort: 80              # Container에서 여는 포트 지정
+      protocol: TCP                   # Protocol 지정
+=====
+
+레이블(Label)
+ - Kubernetes Cluster의 모든 Object에 Key/Value 쌍으로 리소스를 식별하고 속성을 지정하는 데 사용
+
+ release: stable   /   release: alpha
+ app: webapp  /  app: vote
+
+Pod 목록 확인(Label 표시)
+kubectl get pods --show-labels
+
+레이블 지정
+kubectl label pods my-nginx-pod env=test
+
+
+
+
+
+
+
