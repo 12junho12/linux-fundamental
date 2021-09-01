@@ -1,0 +1,163 @@
+﻿Kubernetes 네트워크
+ 파드(Pod)는 일회성으로 동작하며 유동적으로 운영됨
+ 특정 노드에 파드가 스케쥴링되고 IP 주소를 동적으로 할당 받으므로 클라이언트가 사전에 IP 주소를 예측할 수 없음
+
+Kubernetes Cluster 내부 네트워크
+
+ 서비스(Service)
+   Kubernetes Cluster에서 애플리케이션을 실행하는 파드 및 컨트롤러에 대해 단일 네트워크 진입점을 제공하는 오브젝트
+   별도로 서비스 오브젝트를 종료하지 않는 이상 부여된 IP주소가 변경되지 않음
+   Label Selector를 이용하여 서비스 오브젝트와 연결할 대상을 관리하며 서비스에 선택된 파드의 목록은 엔트리포인트 오브젝트가 관리함
+
+ 서비스 목록 확인
+ kubectl get services
+
+ 서비스 생성(명령어)
+ kubectl expose CONTROLLER_TYPE CONTROLLER_NAME --name SERVICE_NAME
+
+ 서비스 생성(Manifest 작성)
+ vim SERVICE.yaml
+ kubectl create -f SERVICE.yaml
+
+ SessionAffinity
+   Client의 요청을 처음 요청한 파드(Pod)와 동일한 파드(Pod)에 세션을 유지하고자 할 때 사용
+
+ 서비스 (다중 포트)
+
+ 서비스 (named port)
+
+
+서비스 탐색(Service Discovery)
+ (1) 환경변수를 이용한 Service Discovery
+
+
+ (2) Kubernetes Cluster 내부 DNS를 이용한 Service Discovery 
+
+  같은 namespace 내에서 질의시
+  myapp-svc-clusterip
+
+  다른 namespace에서 질의시
+  myapp-svc-clusterip.default
+
+  오브젝트 타입 지정
+  myapp-svc-clusterip.default.svc
+
+  FQDN 지정
+  myapp-svc-clusterip.default.svc.cluster.local
+
+  myapp-svc-clusterip.default.services.cluster.local
+  SERVICE_NAME.NAMESPACE.k8s_OBJECT.K8s_CLUSTER_DOMAIN
+
+
+Kubernetes Cluster 외부 네트워크
+
+  서비스 종류
+    - ClusterIP
+        Kubernetes Cluster 내부 서비스를 제공하기 위한 서비스 타입
+        기본적으로 Kubernetes Cluster 내부에서만 접근할 수 있음
+
+    - NodePort
+        NodePort + ClusterIP
+        Kubernetes Cluster 의 모든 노드에 외부 접근용 포트를 할당하는 서비스 타입
+        노드의 Port를 이용하여 Kubernetes Cluster를 외부에서 접근이 가능함
+        노드의 Port를 접근하면 Service에 의해 파드(Pod)로 리다이렉션 됨
+        파드(Pod)를 실행하지 않는 노드에서도 노드 포트가 할당되며 접근이 가능함
+        노드의 Port에 할당 가능한 Port는 기본적으로 30000 ~ 32767 범위 내에서 사용 가능하며 변경 가능함
+        
+    - LoadBalancer
+       LoadBalancer + NodePort + ClusterIP
+       NodePort의 확장된 개념으로 Kubernetes Cluster 외부의 LoadBalancer를 이용하여 외부에서 접근 가능하도록 하는 서비스 타입
+       기본적으로 클라우드 서비스 환경에서 지원하며 On-Premise 환경에서는 metallb 를 사용하여 LoadBalancer 타입의 서비스 리소스를 사용할 수 있음
+
+    - ExternalName
+      Kubernetes Cluster 내부의 파드가 외부의 특정 도메인에 쉽게 접근할 수 있도록 하는 서비스 타입
+      Kubernetes Cluster 외부의 도메인 주소가 변경되는 경우 해당 주소를 참조하는 컨테이너 이미지를 다시 작성할 필요가 있는데 ExternalName 서비스를 사용하면 애플이케이션을 다시 작성할 필요가 없음
+
+
+인그레스(Ingress)
+  L7 LoadBalancer 기능을 제공하는 Kubernetes 오브젝트
+  NodePort와 LoadBalancer 타입의 서비스 오브젝트가 L4 수준에서 동작하나 인그레스는 L7 수준에서 동작함
+  NodePort와 LoadBalancer 타입의 서비스 오브젝트는 노출시키고자 하는 애플리케이션 마다 생성되어야 하지만 인그레스는 하나의 인그레스 리소스를 사용하여 각 애플리케이션에 트래픽을 전달할 수 있음
+
+----
+<Ingress nginx Controller 설치>
+
+https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal
+
+Ingress nginx Controller 설치
+kubectl create -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.0/deploy/static/provider/baremetal/deploy.yaml
+
+Ingress nginx Controller Pod 목록 확인
+kubectl get pods -n ingress-nginx
+
+NAME                                        READY   STATUS      RESTARTS   AGE
+ingress-nginx-admission-create-hhwfx        0/1     Completed   0          9m16s
+ingress-nginx-admission-patch-9zv4r         0/1     Completed   0          9m16s
+ingress-nginx-controller-57ffff5864-6gvq6   1/1     Running     0          9m16s
+ * ingress-nginx-controller Pod "Running" 상태 확인
+
+Ingress nginx Controller 서비스 목록 확인
+kubectl get services -n ingress-nginx
+NAME                                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+ingress-nginx-controller             NodePort    10.107.29.131    <none>        80:32653/TCP,443:31820/TCP   20m
+ingress-nginx-controller-admission   ClusterIP   10.107.110.118   <none>        443/TCP                      20m
+ * 설치 직후에는 기본적으로 External IP가 정의되어 있지 않음
+
+Ingress nginx Controller 서비스 Manifest 수정
+kubectl edit services -n ingress-nginx ingress-nginx-controller
+===
+...
+spec:
+  clusterIP: X.X.X.X
+  externalIPs:
+  - 192.168.200.21
+  - 192.168.200.22
+  - 192.168.200.23
+  externalTrafficPolicy: Cluster
+...
+===
+
+Ingress nginx Controller 서비스 수정 결과 확인
+kubectl get services -n ingress-nginx
+NAME                                 TYPE        CLUSTER-IP       EXTERNAL-IP                                    PORT(S)                      AGE
+ingress-nginx-controller             NodePort    10.107.29.131    192.168.200.21,192.168.200.22,192.168.200.23   80:32653/TCP,443:31820/TCP   23m
+ingress-nginx-controller-admission   ClusterIP   10.107.110.118   <none>                                         443/TCP                      23m
+ * External IP에 변경사항이 반영되어있는지 확인
+
+----
+서비스
+ - Headless
+     서비스의 ClusterIP가 아닌 개별 파드(Pod)를 직접 접근할 필요가 있는 경우에 사용하는 서비스 타입
+
+<Headless 서비스 실습>
+
+Headless 서비스를 위한 ReplicaSet 생성
+kubectl create -f myapp-rs-headless.yaml
+
+Headless 서비스 생성
+kubectl create -f myapp-svc-headless.yaml
+
+Headless 서비스 목록 확인
+kubectl get services
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+myapp-svc-headless   ClusterIP   None            <none>        80/TCP         10s
+
+ReplicaSet 목록 확인
+kubectl get replicaset
+NAME                DESIRED   CURRENT   READY   AGE
+myapp-rs-headless   3         3         3       60s
+
+Headless 서비스의 Endpoint 목록 확인
+kubectl get endpoints myapp-svc-headless
+NAME                 ENDPOINTS                                                      AGE
+myapp-svc-headless   192.168.119.153:8080,192.168.233.235:8080,192.168.9.104:8080   78s
+
+테스트용 파드 실행 후 headless 서비스 이름 DNS 질의
+kubectl run nettool -it --image devops2341/network-multitool:v1 --rm bash
+
+$ host myapp-svc-headless
+myapp-svc-headless.default.svc.cluster.local has address 192.168.233.235
+myapp-svc-headless.default.svc.cluster.local has address 192.168.9.104
+myapp-svc-headless.default.svc.cluster.local has address 192.168.119.153
+
+
