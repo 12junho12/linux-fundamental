@@ -1,0 +1,163 @@
+﻿Kubernetes 네트워크
+
+서비스
+ - ClusterIP
+ - NodePort
+ - LoadBalancer
+ - ExternalName
+ - Headless
+
+인그레스(Ingress)
+ L7 LoadBalacer 기능을 제공하는 Kubernetes 오브젝트
+ HTTP, HTTPS에 대해 처리가 가능함
+ NodePort, LoadBalancer 타입의 서비스는 L4 수준에서 동작하지만 인그레스는 L7에서 동작함
+ NodePort, LoadBalancer 타입의 서비스 오브젝트는 노출시키고자하는 애플리케이션 마다 생성해야하나 인그레스 오브젝트는 하나의 오브젝트로 처리할 수 있음
+
+<Ingress Controller 기존 버전 삭제>
+kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.0/deploy/static/provider/baremetal/deploy.yaml
+
+---
+<Ingress Controller 설치>
+Ingress nginx Controller 설치(Manifest)
+kubectl create -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.47.0/deploy/static/provider/baremetal/deploy.yaml
+
+Ingress nginx Controller Pod 목록 확인
+kubectl get pods -n ingress-nginx
+NAME                                        READY   STATUS      RESTARTS   AGE
+ingress-nginx-admission-create-b4whn        0/1     Completed   0          5m38s
+ingress-nginx-admission-patch-qk9x6         0/1     Completed   0          5m38s
+ingress-nginx-controller-6cb6fdd64b-4qtkd   1/1     Running     0          5m38s
+
+Ingress nginx Controller 서비스 목록 확인
+kubectl get services -n ingress-nginx
+NAME                                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+ingress-nginx-controller             NodePort    10.109.169.242   <none>        80:31855/TCP,443:31025/TCP   6m23s
+ingress-nginx-controller-admission   ClusterIP   10.110.19.156    <none>        443/TCP                      6m23s
+ * ingress-nginx-controller 서비스에 External IP가 없는 상태임
+
+Ingress nginx Controller 서비스 오브젝트 수정
+kubectl edit services ingress-nginx-controller -n ingress-nginx
+
+===
+...
+spec:
+  clusterIP: X.X.X.X
+  externalIPs:
+  - 192.168.200.21
+  - 192.168.200.22
+  - 192.168.200.23
+  externalTrafficPolicy: Cluster
+...
+===
+
+Ingress nginx Controller 서비스 수정 결과 확인
+kubectl get services -n ingress-nginx
+NAME                                 TYPE        CLUSTER-IP       EXTERNAL-IP
+                      PORT(S)                      AGE
+ingress-nginx-controller             NodePort    10.109.169.242   192.168.200.21,192.168.200.22,192.168.200.23   80:31855/TCP,443:31025/TCP   9m45s
+ingress-nginx-controller-admission   ClusterIP   10.110.19.156    <none>
+                      443/TCP                      9m45s
+ * External IP 할당 확인
+
+---
+-----
+스토리지
+
+Volume
+  파드의 저장공간
+
+Volume 종류
+ - emptyDir
+ - gitRepo
+ - hostPath
+ - 네트워크 스토리지 볼륨
+    cephfs, cinder, glusterfs, iscsi, nfs 등
+ - 클라우드 스토리지 볼륨
+    awsElasticBlockStore, azureDisk, azureFile, gcePersistentDisk 등
+
+emptyDir 볼륨
+ - 아무 데이터도 없는 빈 디렉터리를 제공하는 Kubernetes 볼륨
+ - 파드(Pod)가 생성하는 데이터를 저장할 수 있으며 동일 파드 내의 컨테이너 간에 데이터 공유 목적으로 간단하게 사용
+ - 임시로 데이터를 저장할 목적으로 사용하는 볼륨
+ - 파드가 종료되면 데이터가 삭제됨
+
+===
+...
+spec:
+  containers:
+  - volumeMounts:  # 볼륨 연결
+    - name: VOLUME_NAME
+        mountPath: MOUNT_PATH
+
+  volumes:           # 볼륨 정의
+  - name: VOLUME_NAME  
+    emptyDir: {}    # 볼륨 종류 지정
+...
+===
+
+gitRepo 볼륨
+ - emptyDir 볼륨의 빈 볼륨에 최초 생성시 git Repository의 데이터를 한번 복제하는 볼륨
+
+초기화 컨테이너(initContainer)
+ - 애플리케이션 컨테이너가 실행되기 전에 초기화 작업을 수행하는 컨테이너
+ - 파드 생성시 최초 1회만 실행되며 초기화 작업을 수행함
+
+hostPath 볼륨
+ - Kubernetes Cluster의 Node의 로컬 파일 시스템을 파드(Pod)가 사용할 수 있도록 제공하는 볼륨
+ - 파드(Pod) 종료 시에도 데이터는 유지됨
+ - Host(Node)가 다른 Pod와 Volume을 공유할 수 없음
+
+===
+...
+spec:
+  volumes:
+  - name: VOLUME_NAME
+    hostPath:
+      type: TYPE   # 타입 지정
+      path: PATH  # 호스트의 경로 지정
+...
+===
+
+type : 
+ - DirectoryOrCreate :  디렉터리 사용 (해당 디렉터리 없을 시 생성)
+ - Directory :  디렉터리 사용 (해당 디렉터리가 존재해야함)
+ - FileOrCreate :  지정된 경로의 파일 사용 (해당 파일 없을 시 생성)
+ - File :  지정된 경로의 파일 사용 (해당 파일이 존재해야함)
+ - Socket :  지정된 경로의 Socket 사용 (해당 파일이 존재해야함)
+ - CharDevice :  지정된 경로의 Character Device 사용 (해당 파일이 존재해야함)
+ - BlockDevice :  지정된 경로의 Block Device 사용 (해당 파일이 존재해야함)
+
+PersistentVolume(PV)
+ - Kubernetes 파드 및 컨트롤러에게 영구적인 저장공간을 제공하는 Volume
+
+PersistentVolumeClaim(PVC)
+
+PV 및 PVC의 Lifecycle
+
+ (1) Provisioning
+     - PersistentVolume(PV)이 생성된 단계
+
+ (2) Binding
+     - PersistentVolume(PV)이 PersistentVolumeClaim(PVC)와 연결되는 단계
+
+ (3) Using
+     - PersistentVolumeClaim(PVC)이 제공한 볼륨을 파드(Pod)에 연결하여 사용하는 단계
+
+ (4) Reclaiming
+     - 사용이 끝난 PersistentVolumeClaim(PVC)이 종료/삭제되면 연결된 PersistentVolume(PV)을 회수하는 단계
+
+
+정적 Volume Provisioning
+
+
+
+동적 Volume Provisioning
+
+
+
+
+
+
+
+
+
