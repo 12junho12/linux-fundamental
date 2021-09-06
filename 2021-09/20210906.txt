@@ -1,0 +1,38 @@
+﻿디플로이먼트(Deployment)
+  ReplicaSet을 포함하는 상위 컨트롤러로 일정 갯수의 복제본을 유지시켜주는 컨트롤러
+  
+배포 전략(Deployment Strategy)
+ RollingUpdate
+   기존 애플리케이션 버전에서 새로운 버전으로 점진적으로 교체하는 배포전략
+ Recreate
+   기존 파드를 모두 삭제 후 새로운 파드를 생성하는 배포전략
+
+-------
+
+Statefulset
+ 파드의 복제본 관리
+ 파드의 고유성(이름, 네트워크, 스토리지)
+ 파드의 순서(Order)
+
+Statefulset 주의 사항
+ - 파드에 사용할 스토리지는 PVC를 통해서만 할당 가능함
+   - 미리 PV를 생성
+   - 볼륨 동적 프로비저닝이 가능해야함
+ - 파드는 고유성을 가지므로 각각의 파드에 접근시 Headless 서비스를 이용함
+ - 파드의 이름은  Statefulset_NAME-#  (0부터 순서대로 번호가 있는 이름이 부여됨)
+ - 파드의 Kubernetes 도메인 주소는 POD_NAME.SERVICE_NAME.svc.cluster.local
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

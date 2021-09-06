@@ -1,0 +1,256 @@
+﻿애플리케이션 커스터마이징
+
+컨테이너 애플리케이션 커스터마이징
+  컨테이너 이미지 커스터마이징
+  환경 변수 사용
+  ConfigMap
+  Secret
+
+
+ConfigMap
+  - 간단한 텍스트, 설정값, 변수, 설정 파일 등을 Key Value 쌍으로 저장하고 사용할 수 있는 Kubernetes 오브젝트
+
+ConfigMap 오브젝트 생성(명령어)
+ kubectl create configmap CONFIGMAP [option]
+
+
+--from-file=FILE
+ - Key/Value가 있는 파일 지정
+ - Key를 별도로 지정하지 않는 경우 파일이름이 Key가 됨
+
+--from-file=DIRECTORY
+ - 디렉터리 지정시 디렉터리 하위의 여러 파일을 하나의 ConfigMap에 담을 수 있음
+
+ --from-file=KEY=FILE
+
+--from-literal=KEY=VALUE
+ - KEY=VALUE 를 문자열로 지정
+
+kubectl create configmap my-config1 --from-literal=key1=value1
+kubectl create configmap my-config2 --from-file=key2
+kubectl create configmap my-config3 --from-file=key3=key3.txt
+
+
+ConfigMap 생성(Manifest)
+
+vi CONFIGMAP.yaml
+kubectl create -f CONFIGMAP.yaml
+
+===
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: CONFIGMAP_NAME
+data:
+  KEY: VALUE
+===
+
+
+ConfigMap 오브젝트 목록 확인
+kubectl get configmaps
+
+ConfigMap 오브젝트 상세 정보 확인
+kubectl describe configmaps CONFIGMAP
+
+-----
+Secret
+ - 패스워드, 키, 인증서 등의 민감 데이터를 안전하게 제공할 수 있도록 하는 Kubernetes 오브젝트
+ - ConfigMap과 유사하나 값이 저장될 때 Base64 인코딩이 되어 저장됨
+
+Secret 종류
+ - generic (=Opaque) : Key Value 쌍의 임의의 데이터(일반)
+ - docker-registry : Docker Registry 인증 정보
+ - tls : TLS 키 및 인증서
+
+Secret 목록 확인
+kubectl get secrets
+
+Secret 목록 확인
+kubectl describe secrets SECRET
+
+Secret 오브젝트 Manifest 확인
+kubectl get secrets SECRET -o yaml
+
+Secret 생성 (명령어)
+ kubectl create secret TYPE NAME [option]
+
+일반 시크릿 생성
+ kubectl create secret generic NAME [option]
+
+Docker Registry 인증 시크릿 생성
+ kubectl create secret docker-registry NAME \
+ --docker-username=USER --docker-password=PASS \
+ --docker-email=EMAIL [--docker-server=SERVER]
+
+TLS 키/인증서 시크릿 생성
+ kubectl create secret tls --cert=CERT_FILE --key=KEY_FILE
+
+--from-file=FILE
+ - Key/Value가 있는 파일 지정
+ - Key를 별도로 지정하지 않는 경우 파일이름이 Key가 됨
+
+--from-file=DIRECTORY
+ - 디렉터리 지정시 디렉터리 하위의 여러 파일을 하나의 ConfigMap에 담을 수 있음
+
+ --from-file=KEY=FILE
+
+--from-literal=KEY=VALUE
+ - KEY=VALUE 를 문자열로 지정
+
+Base64 인코딩
+ echo Password_test | base64
+UGFzc3dvcmRfdGVzdAo=
+
+Base64 디코딩
+ echo UGFzc3dvcmRfdGVzdAo= | base64 --decode
+Password_test
+
+시크릿 생성 (Manifest)
+(사전에 시크릿에 넣어줄 데이터를 Base64 인코딩 해야함)
+vim SECRET.yaml
+kubectl create -f SECRET.yaml
+
+===
+apiVersion: v1
+kind: Secret
+metadata:
+  name: SECRET_NAME
+type: Opaque
+data:
+  KEY1: BASE64_ENCODED_VALUE1
+  KEY2: BASE64_ENCODED_VALUE2
+===
+
+TLS 시크릿을 이용한 nginx 파드 SSL/TLS 구성
+
+1. 키/인증서 생성
+mkdir nginx-tls
+openssl genrsa -out nginx-tls/nginx-tls.key 2048
+
+openssl req -new -x509 -key nginx-tls/nginx-tls.key \
+ -out nginx-tls/nginx-tls.crt \
+ -days 365 -subj /CN=myapp.example.com
+
+2. TLS 인증서/키를 위한 TLS 시크릿 생성
+kubectl create secret tls nginx-tls-secret \
+ --cert=nginx-tls/nginx-tls.crt \
+ --key=nginx-tls/nginx-tls.key
+
+kubectl describe secrets nginx-tls-secret
+
+3. TLS 구성을 위한 ConfigMap 생성
+vim conf/nginx-tls.conf
+kubectl create configmap nginx-tls-config --from-file=
+conf/nginx-tls.conf
+kubectl describe configmaps nginx-tls-config
+
+4. TLS 구성된 파드 생성
+
+------
+Storage
+
+<Rook Ceph Cluster 구성>
+
+비어 있는 디스크 사전에 준비
+
+git clone --single-branch --branch release-1.6 https://github.com/rook/rook
+cd ~/rook/cluster/examples/kubernetes/ceph
+
+rook operator 설치
+kubectl create -f crds.yaml -f common.yaml -f operator.yaml
+kubectl get pods -n rook-ceph
+
+rook-ceph Cluster 설치
+kubectl create -f cluster.yaml
+kubectl get pods -n rook-ceph
+
+RBD StorageClass 생성
+kubectl create -f csi/rbd/storageclass.yaml
+
+RBD StorageClass 확인
+kubectl get storageclasses.storage.k8s.io
+
+CephFS Filesystem 설치
+Data Pool 생성
+kubectl create -f filesystem.yaml
+
+CephFS Filesystem 확인
+kubectl get pods -n rook-ceph -l app=rook-ceph-mds
+
+CephFS 스토리지 클래스 생성
+kubectl create -f csi/cephfs/storageclass.yaml
+
+
+기본 StorageClass 지정
+StorageClass 목록 확인
+kubectl get storageclasses.storage.k8s.io
+
+기본 StorageClass 설정
+kubectl patch storageclasses.storage.k8s.io rook-ceph-block \
+-p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+StorageClass 목록 확인
+kubectl get storageclasses.storage.k8s.io
+
+-----
+
+동적 볼륨 프로비저닝
+
+StorageClass
+ - 스토리지의 종류를 정의하는 리소스
+
+===
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard
+provisoner: kubernetes.io/XXXX
+parameters:
+  XXX: 
+===
+
+-----
+Deployment
+ ReplicaSet을 포함하는 상위 수준의 컨트롤러
+ 지정된 갯수의 파드(Pod) 복제본을 생성하고 유지함
+ ReplicaSet 기능과 배포를 위한 배포전략을 구현할 수 있는 컨트롤러
+
+배포전략(Deployment Strategy)
+
+===
+...
+spec:
+  strategy:
+    type: STRATEGY_TYPE
+    STRATEGY_TYPE:
+      ~~~
+...
+===
+
+RollingUpdate : 롤링 업데이트
+ - 기존 애플리케이션 버전에서 새로운 애플리케이션 버전으로 점진적으로 교체하는 배포 전략
+  maxUnavailable : 롤링 업데이트 중 사용할 수 없는 최대 파드의 수 (기본값 : 25%, 정수/비율 지정 가능)  
+  maxSurge:  생성할 수 있는 최대 파드의 수 (기본값 : 25%, 정수/비율 지정 가능)  
+Recreate : 재생성
+  - 기존의 파드가 모두 삭제 되고 새로운 파드가 생성되는 배포 전략
+  - 모든 파드가 삭제되므로 다운타임이 발생할 수 밖에 없음
+
+minReadySeconds :  롤링업데이트 시 파드가 준비되기까지 대기하는 시간 지정 (기본값 : 0초)
+
+
+Deployment 롤링 업데이트
+롤링 업데이트 명령어 사용방법
+ kubectl set image deployment DEPLOYMENT CONTAINER=IMAGE
+ kubectl set image deploymnet -f DEPLOYMENT_FILE CONTAINER=IMAGE
+
+롤링 업데이트 (v1 -> v2)
+kubectl set image deployment myapp-deploy myapp=devops2341/go-myweb:v2
+
+롤링 업데이트 (v2 -> v3)
+kubectl set image deployment myapp-deploy myapp=devops2341/go-myweb:v3 --record
+
+롤아웃 히스토리 확인
+kubectl rollout history deployment DEPLOYMENT
+
+ * kubectl에서 --record 옵션 사용시 롤아웃 히스토리 CHANGE CAUSE에 사용 명령어를 기록할 수 있음
+
