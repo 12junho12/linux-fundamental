@@ -1,0 +1,103 @@
+﻿Auto Scaling
+
+파드(Pod)의 리소스 관리
+
+Metrics Server 설치
+
+wget https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+vim components.yaml
+===
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  ...
+spec:
+  ...
+  - args:
+    - --cert-dir=/tmp
+    - --secure-port=443
+    - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+    - --kubelet-use-node-status-port
+    - --metric-resolution=15s
+    - --kubelet-insecure-tls
+...
+===
+
+kubectl top nodes
+
+
+요청 리소스 정의(requests)
+===
+...
+spec:
+  containers:
+  - resources:
+      requests:
+        cpu: 200m   # m(millicore)
+        memory: 10Mi
+...
+===
+
+리소스 제한 정의(limits)
+===
+spec:
+  containers:
+  - resources:
+      limits:
+        cpu: 200m   # m(millicore)
+        memory: 10Mi
+===
+
+리밋 레인지(LimitRange)
+  Kubernetes namespace에서 리소스 할당을 제한하는 정책을 정의하는 오브젝트
+
+----
+Auto Scaling
+
+kubectl scale CONTROLLER --replicas  N
+
+HPA(Horizontal Pod Autoscaler)
+ 관리되는 모든 파의 메트릭(CPU, MEMORY) 측정해서 가져옴
+ 목표값에 부합하도록 파드의 갯수를 결정함
+ 파드의 갯수를 유지함
+ ReplicationController, ReplicaSet, Deployment, StatefulSet 컨트롤러를 다룰 수 있음
+
+ 목표 복제본 갯수 = ceil[ 현재 복제본 갯수 X (현재 메트릭 값 / 목표 메트릭 값 ) ]
+
+HPA 리소스 정의
+===
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: HPA_NAME
+spec:
+  scaleTargetRef: # 관리 대상 컨트롤러 정의
+    apiVersion: apps/v1
+    kind: Deployment
+    name: CONTROLLER_NAME
+  minReplicas: N
+  maxReplicas: N
+  targetCPUUtilizationPercentage: N # CPU 평균 사용량 목표값 
+===
+
+HPA 생성(명령어)
+kubectl autoscale CONTROLLER_TYPE CONTROLLER --min N --max N --cpu-percent N
+
+HPA 생성(Manifest)
+vim HPA.yaml
+kubectl create -f HPA.yaml
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
