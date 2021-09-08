@@ -1,0 +1,126 @@
+﻿파드 스케줄러(Pod Scheduler)
+
+노드 네임
+노드 셀렉터
+어피니티
+테인트 및 톨러레이션
+커든 및 드레인
+
+노드 네임
+ 특정 노드를 지정하여 특정 노드에 파드를 배치시키는 방법으로 스케줄러를 사용하지 않음
+
+노드 셀렉터
+ 레이블을 사용하여 특정 노드에 파드를 배치시키는 방법으로 스케줄러를 사용한 방법
+ 배치하고자 하는 노드의 레이블 지정하여 파드를 배치함
+
+어피니티(Affinity)
+ 선호도와 비 선호도를 지정하는 것
+ 
+어피니티 종류
+ 노드 어피니티(Node Affinity) : 파드를 특정 노드에 배치하는 것을 선호함
+ 파드 어피니티(Pod Affinity) : 파드 간에 같은 노드에 배치하는 것을 선호함
+ 파드 안티 어피니티(Pod Anti-Affinity) : 파드 간에 다른 노드에 배치하는 것을 선호함
+
+노드 어피니티(Node Affinity)
+ 노드 셀렉터와 유사하게 파드를 특정 노드에 배치할 수 있음
+ 노드 셀렉터는 해당 레이블이 지정된 노드에만 배치되나 노드 어피니티는 특정 노드에 배치하는 것을 강제하지 않을 수 있음
+
+===
+spec:
+  affinity:
+    nodeAffinity:
+      requireDuringSchedulingIgnoredDuringExecution:   # 파드가 스케쥴링 될 때 반드시 해당 조건 만족
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: gpu-model
+            operator: in
+            values:
+            - '3080'
+            - '2080'
+       preferredDuringSchedulingIgniredDuringExecution:   # 파드가 스케쥴링 될 때 해당 조건 만족을 선호함
+       - weight: 10  # 가중치 (1 - 100)
+         preferences:
+           matchExpressions:
+           - key: gpu-model
+             operator: in
+             values:
+             - titan
+===
+
+파드 어피니티
+
+===
+spec:
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:  # 파드가 스케쥴링 될 때 반드시 조건에 만족함
+      - labelSelector:
+          matchExpressions:
+          - key: KEY
+            operator: In
+            values:
+            - val1
+            - val2
+        topologyKey: TOPOLOGY_KEY  # 파드 어피니티/안티 어피니티에서 파드를 배치/분리하는 기준 (보통 노드 이름)
+===
+
+파드 안티 어피니티
+
+===
+spec:
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:  # 파드가 스케쥴링 될 때 반드시 조건에 만족함
+      - labelSelector:
+          matchExpression:
+          - key: KEY
+            operator: In
+            values:
+            - val1
+        topologyKey: TOPOLOGY_KEY  # 파드 어피니티/안티 어피니티에서 파드를 배치/분리하는 기준 (보통 노드 이름)
+===
+
+테인트 
+  Kubernetes Cluster 특정 노드에 더이상 파드가 추가되지 않도록 파드를 스케줄링 하지 않는 것
+  별도의 톨러레이션이 없는 경우에는 파드가 추가 생성되지 않음
+  테인트는 "KEY[=VALUE]:EFFECT" 형태로 정의됨
+
+테인트 EFFECT
+ - NoSchedule  :  톨러레이션이 정의되어있지 않은 경우 파드를 스케줄링하지 않음 (기존 파드에는 적용되지 않음)
+ - PreferNoSchedule  :  기본적으로는 톨러레이션이 정의되어있지 않은 경우 파드를 스케줄링하지 않지만 경우에 따라(리소스가 부족한 경우) 파드가 배치될 수 있음 (기존 파드에 적용되지 않음)
+ - NoExecute  :  톨러레이션이 정의되어있지 않은 경우 파드를 스케줄링할 수 없음 (기존 파드도 설정을 무시할 수 없음)
+
+
+톨러레이션
+  테인트가 설정된 노드에 특정 파드를 배치할 수 있도록 하는 것
+
+커든(Cordon)
+ 특정 노드에 새로운 파드가 스케줄링되지 않도록 하는 기능(유지보수 목적, 모든 파드)
+
+언커든(UnCordon)
+ 커든 된 특정 노드에 다시 새로운 파드가 스케줄링 될 수 있도록 커든을 해제 하는 기능
+
+드레인(Drain)
+ 관리적 목적으로 노드에 파드가 없어야 하는 경우 파드를 퇴거(Evict)시키고 다른 노드로 이전하는 것
+ 드레인 수행시 커든이 먼저 수행되며 파드의 퇴거(Evit)가 진행됨
+ 드레인 수행 후 언커든을 수행해야 함
+
+커든(cordon)/언커든(uncordon) 설정
+kubectl cordon NODE
+kubectl uncordon NODE
+
+드레인 수행
+kubectl drain NODE
+kubectl drain NODE --ignore-daemonsets=true --delete-local-data=true
+
+kubectl uncordon NODE
+
+
+
+
+
+
+
+
+
+
