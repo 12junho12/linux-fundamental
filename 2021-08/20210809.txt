@@ -1,43 +1,120 @@
-가상화
-- 하드웨어와 실행환경을 가상으로 구성하는 기술
+가상화(Virtualization)
+ - 하드웨어와 실행환경을 가상으로 구성하는 기술
 
 가상화의 종류
 (1) 서버 가상화
- - 가상머신을 생성하여 관리하는 기술
+     - 가상 머신을 생성하여 관리하는 기술(하드웨어 가상화)
 
 (2) 네트워크 가상화
- - 여러 호스트가 연결된 물리적인 네트워크를 가상화 하는 기술
+     - 여러 호스트가 연결된 물리적인 네트워크를 가상화 하는 기술
 
 (3) 스토리지 가상화
- - 여러개의 디스크 공간을 하나의 논리적인 드라이브 처럼 사용하는 기술
+     - 여러개의 디스크 공간을 하나의 논리적인 드라이브 처럼 사용하는 기술
 
 (4) 컨테이너 가상화
- - 운영체제에서 논리적인 구획을 만들고 컨테이너간 독립적으로 어플리케이션을 실행할 수 있는 환경
+     - 운영체제에서 논리적인 구획을 만들고 컨테이너 간 독립적으로 애플리케이션을 실행할 수 있는 환경
 
-Linux Container
-- Linux 운영체제에서 Application을 격리하기 위한 컨테이너 기술
-- Linux 커널에 탑재되어 있음
+Linux Container (LXC)
+ - Linux 운영체제에서 Application을 격리하기 위한 컨테이너 기술
+ - Linux 커널에 탑재되어 있음
 
 Docker
-- Container를 실행할 수 있는 실행 환경
-- Container 이미지를 생성, 배포하기 쉬운 환경을 제공
+ - Container를 실행할 수 있는 실행 환경
+ - Container 이미지를 생성, 배포하기 쉬운 환경을 제공
 
 Docker 장점
-- 서버를 코드 형태로 정의
-- 이식성이 높음
-- 상호 운용성
+ - 서버를 코드 형태로 정의
+ - 이식성이 높음
+ - 상호 운용성
 
 <Docker 용어 정리>
+
 이미지
-- 컨테이너에서 Application이 실행되기 위한 환경을 구성하는데 필요한 Application, Data, Library 등의 모임
+ - 컨테이너에서 Application이 실행되기 위한 환경을 구성하는데 필요한 Application, Data, Library 등의 모임
 
 컨테이너
-- 이미지의 실행 형태를 컨테이너라고 함
-- 이미지가 메모리에 적재되어 실행되는 형태
+ - 이미지의 실행 형태를 컨테이너라고 함
+ - 이미지가 메모리에 적재되어 실행되는 형태
 
-저장소
-- 컨테이너 이미지를 공유하기 위한 저장공간
-- 저장소는 용도에 따라 Public, Private하게 이용할 수 있다.
-- 기본 저장소는 도커에서 제공하는 Docker Hub를 사용하며 필요에 따라서는 사설 저장소를 운영하여 사용할 수 있음
+저장소(Registry)
+ - 컨테이너 이미지를 공유하기 위한 저장 공간
+ - 저장소는 용도에 따라 Public, Private 하게 이용할 수 있음
+ - 기본 저장소는 도커에서 제공하는 Docker Hub를 사용하며 필요에 따라서는 사설 저장소를 운영하여 사용할 수 있음
+
+
+Docker 설치 방법
+ - Docker for Windows
+ - Docker for Mac
+
+
+
+
+[Docker 설치 과정]
+IP 주소 설정, Hostname 설정
+
+yum install epel-release
+wget https://download.docker.com/linux/centos/docker-ce.repo
+cp docker-ce.repo /etc/yum.repos.d
+
+yum install docker-ce docker-ce-cli containerd.io
+
+-----
+
+Docker 사용방법
+
+Docker 컨테이너 이미지 검색
+ $ docker search 이미지
+ NAME - 컨테이너 이름
+ DESCRIPTION - 설명
+ STARS - 평점
+ OFFICIAL - 공식 이미지 여부
+ AUTOMATED - 자동화 빌드 여부
+
+Docker 컨테이너 이미지 다운로드
+ $ docker pull 이미지
+
+Docker 컨테이너 이미지 목록 확인
+ $ docker images
+  REPOSITORY - 컨테이너 이미지 이름(이미지가 저장되는 Repository 이름)
+  TAG             - 컨테이너 세부 이미지를 구분하기 위한 이름
+  IMAGE ID     - 컨테이너 이미지를 고유하게 구분하기 위한 ID
+  CREATED      - 컨테이너 이미지 생성 시기
+  SIZE             - 컨테이너 이미지의 용량
+
+ $ docker images  컨테이너이미지
+
+Docker 컨테이너 이미지 삭제
+ $ docker image rm  이미지
+
+Docker 컨테이너 실행 (컨테이너가 없을 때 최초 실행)
+  docker container run [OPTIONS] IMAGE [COMMAND] [ARG...]
+  $ docker container run --name  -i -t  CONTAINER_NAME IMAGE  COMMAND
+  $ docker container run -i -t --name centos7 centos:7 /bin/bash
+
+ CentOS 이미지에서 bash shell 실행 (Foreground)
+   docker container run -i -t --name centos7-1 centos:7 /bin/bash
+ CentOS 이미지에서 bash shell 실행 (Background)
+   docker container run -d -t --name centos7-2 centos:7 /bin/bash
+
+Docker 컨테이너 실행 (컨테이너가 존재하는 경우)
+  docker container start  CONTAINER_NAME
+
+Docker 컨테이너 중지
+  docker container stop  CONTAINER_NAME
+
+Docker 컨테이너 제거
+  docker container rm CONTAINER_NAME
+
+Docker 컨테이너 Attach
+  docker container attach CONTAINER_NAME
+
+Docker 컨테이너 CPU, RAM 사용량 정보
+  docker container stats
+
+
+
+
+
+
 
 
